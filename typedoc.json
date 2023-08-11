@@ -1,0 +1,8 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src/index.tsx"],
+    "out": "doc",
+    "plugin": ["@zamiell/typedoc-plugin-not-exported"],
+    "excludeInternal": false,
+    "entryPointStrategy": "expand"
+}
