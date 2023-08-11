@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DataTable, DataTableStateEvent, DataTableSelectionChangeEvent, DataTableValueArray } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from "primereact/toast";
-import { useForm, Controller, FieldErrors, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from "primereact/inputnumber";
 import { Checkbox } from 'primereact/checkbox';
@@ -38,6 +38,7 @@ const schema = z.object({
 
 /**
  * The Channels component
+ *
  * @returns the Channels ReactComponent
  */
 const Channels = () => {
