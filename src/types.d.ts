@@ -30,6 +30,7 @@ interface RecElement {
     recorded_time: number,
     measured_value: number,
     channel: number,
+    channel_name?: string,
     diff?: number,
     from_utc_time?: string,
     to_utc_time?: string,

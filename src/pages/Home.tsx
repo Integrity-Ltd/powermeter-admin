@@ -32,7 +32,7 @@ const Home = () => {
     /**
      * The channels of selected powermeter
      */
-    const [channels, setChannels] = useState([]);
+    const [channels, setChannels] = useState<ChannelValues[]>([]);
 
     /**
      * Zod validator of form input values
@@ -161,6 +161,14 @@ const Home = () => {
         const res = await fetch(path);
         values = await res.json();
         setIsLoading(false);
+        if (channels) {
+            values.forEach((records: RecElement) => {
+                let channel_names = channels.filter(ch => ch.channel === records.channel)
+                if (channel_names.length > 0) {
+                    records.channel_name = channel_names[0].channel_name
+                }
+            });
+        }
         if (values.err) {
             show("error", values.err);
             values = [];
@@ -255,7 +263,7 @@ const Home = () => {
                     <Column field="to_server_time" header="To Server Time"></Column>
                     <Column field="from_utc_time" header="From UTC Time"></Column>
                     <Column field="to_utc_time" header="To UTC Time"></Column>
-                    <Column field="channel" header="Channel"></Column>
+                    <Column field="channel_name" header="Channel"></Column>
                     <Column field="measured_value" header="Measured value"></Column>
                     <Column field="diff" header="Diff"></Column>
                 </DataTable>
