@@ -88,10 +88,19 @@ export default function PowerMeter() {
     filters: {},
   });
 
+  const getDefaultPowerMeterValues = (): PowerMeterValues => {
+    return {
+      asset_name: '',
+      ip_address: '',
+      port: 50003,
+      time_zone: defaultTimeZone,
+      enabled: false,
+    }
+  }
   /**
    * The edited row of power meter
    */
-  const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(null);
+  const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(getDefaultPowerMeterValues());
   /**
    * The selected row of power meter
    */
@@ -140,7 +149,7 @@ export default function PowerMeter() {
     queryClient.invalidateQueries({ queryKey: ["power_meter"] });
     queryClient.invalidateQueries({ queryKey: ["power_metercount"] });
     setSelectedRow(null);
-    setEditedRow(null);
+    setEditedRow(getDefaultPowerMeterValues());
   };
 
   /**
@@ -344,20 +353,22 @@ export default function PowerMeter() {
   };
 
   const header = (
-    <div className="flex align-items-center justify-content-end gap-2">
-      <Button
-        type="button"
-        icon="pi pi-file"
-        rounded
-        onClick={() => exportCSV(false)}
-        data-pr-tooltip="CSV"
-      />
-    </div>
+    <>
+      <div className="flex align-items-center justify-content-center"><h2>PowerMeter</h2></div>
+      <div className="flex align-items-center justify-content-end gap-2">
+        <Button
+          type="button"
+          icon="pi pi-file"
+          rounded
+          onClick={() => exportCSV(false)}
+          data-pr-tooltip="CSV"
+        />
+      </div>
+    </>
   );
 
   return (
     <div className="card">
-      <h2>Power meter</h2>
       <Toast ref={toast} />
       <Dialog
         header="Power meter"
@@ -421,6 +432,7 @@ export default function PowerMeter() {
                       disabled={
                         editedRow !== undefined &&
                         editedRow !== null &&
+                        editedRow.id !== undefined &&
                         editedRow.id > -1
                       }
                       id={field.name}
@@ -452,6 +464,7 @@ export default function PowerMeter() {
                       disabled={
                         editedRow !== undefined &&
                         editedRow !== null &&
+                        editedRow.id !== undefined &&
                         editedRow.id > -1
                       }
                       id={field.name}
@@ -571,7 +584,7 @@ export default function PowerMeter() {
           icon="pi pi-check"
           onClick={() => {
             setSelectedRow(null);
-            setEditedRow(null);
+            setEditedRow(getDefaultPowerMeterValues());
             setVisible(true);
           }}
         />

@@ -114,15 +114,18 @@ const Home = () => {
   };
 
   const header = (
-    <div className="flex align-items-center justify-content-end gap-2">
-      <Button
-        type="button"
-        icon="pi pi-file"
-        rounded
-        onClick={() => exportCSV(false)}
-        data-pr-tooltip="CSV"
-      />
-    </div>
+    <>
+      <div className="flex align-items-center justify-content-center"><h2>Measurements</h2></div>
+      <div className="flex align-items-center justify-content-end gap-2">
+        <Button
+          type="button"
+          icon="pi pi-file"
+          rounded
+          onClick={() => exportCSV(false)}
+          data-pr-tooltip="CSV"
+        />
+      </div>
+    </>
   );
 
   /**

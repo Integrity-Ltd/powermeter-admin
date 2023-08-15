@@ -58,10 +58,18 @@ const Channels = () => {
         },
     });
 
+    const getDefaultChannelValue = (): ChannelValues => {
+        return {
+            power_meter_id: -1,
+            channel: 1,
+            channel_name: '',
+            enabled: false,
+        }
+    }
     /**
      * The edited row of channel
      */
-    const [editedRow, setEditedRow] = useState<ChannelValues | null>(null);
+    const [editedRow, setEditedRow] = useState<ChannelValues | null>(getDefaultChannelValue());
     /**
      * The selected row of channel
      */
@@ -104,7 +112,7 @@ const Channels = () => {
         queryClient.invalidateQueries({ queryKey: ["channels"] });
         queryClient.invalidateQueries({ queryKey: ["channelscount"] });
         setSelectedRow(null);
-        setEditedRow(null);
+        setEditedRow(getDefaultChannelValue());
     };
     /**
      * Channels query with RestAPI call
@@ -292,14 +300,16 @@ const Channels = () => {
     };
 
     const header = (
-        <div className="flex align-items-center justify-content-end gap-2">
-            <Button type="button" icon="pi pi-file" rounded onClick={() => exportCSV(false)} data-pr-tooltip="CSV" />
-        </div>
+        <>
+            <div className="flex align-items-center justify-content-center"><h2>Channels</h2></div>
+            <div className="flex align-items-center justify-content-end gap-2">
+                <Button type="button" icon="pi pi-file" rounded onClick={() => exportCSV(false)} data-pr-tooltip="CSV" />
+            </div>
+        </>
     );
 
     return (
         <div className="card">
-            <h2>Channels</h2>
             <Toast ref={toast} />
             <Dialog header="channels" visible={visible} onHide={() => setVisible(false)} style={{ width: '50vw' }}>
                 <form onSubmit={handleSubmit(onSubmit, onSubmitError)} style={{ width: '100%' }}>
@@ -407,7 +417,7 @@ const Channels = () => {
             <div className='vertical-align-baseline'>
                 <Button label="New" icon="pi pi-check" onClick={() => {
                     setSelectedRow(null);
-                    setEditedRow(null);
+                    setEditedRow(getDefaultChannelValue());
                     setVisible(true);
                 }} />
                 <Button label="Modify" icon="pi pi-check" onClick={() => {

@@ -10,7 +10,7 @@ interface FormValues {
 }
 
 interface PowerMeterValues {
-    id: number,
+    id?: number,
     asset_name: string,
     ip_address: string,
     port: number,
@@ -19,7 +19,7 @@ interface PowerMeterValues {
 }
 
 interface ChannelValues {
-    id: number,
+    id?: number,
     power_meter_id: number,
     channel: number,
     channel_name: string,
