@@ -90,17 +90,19 @@ export default function PowerMeter() {
 
   const getDefaultPowerMeterValues = (): PowerMeterValues => {
     return {
-      asset_name: '',
-      ip_address: '',
+      asset_name: "",
+      ip_address: "",
       port: 50003,
       time_zone: defaultTimeZone,
       enabled: false,
-    }
-  }
+    };
+  };
   /**
    * The edited row of power meter
    */
-  const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(getDefaultPowerMeterValues());
+  const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(
+    getDefaultPowerMeterValues()
+  );
   /**
    * The selected row of power meter
    */
@@ -354,15 +356,19 @@ export default function PowerMeter() {
 
   const header = (
     <>
-      <div className="flex align-items-center justify-content-center"><h2>PowerMeter</h2></div>
-      <div className="flex align-items-center justify-content-end gap-2">
-        <Button
-          type="button"
-          icon="pi pi-file"
-          rounded
-          onClick={() => exportCSV(false)}
-          data-pr-tooltip="CSV"
-        />
+      <div className="grid cols-2 justify-content-end w-ull">
+        <div className="flex justify-content-end w-6 ">
+          <h2>PowerMeter</h2>
+        </div>
+        <div className="flex align-items-center justify-content-end gap-2 end w-6">
+          <Button
+            type="button"
+            icon="pi pi-file"
+            rounded
+            onClick={() => exportCSV(false)}
+            data-pr-tooltip="CSV"
+          />
+        </div>
       </div>
     </>
   );
@@ -578,7 +584,7 @@ export default function PowerMeter() {
           <Column field="enabled" header="Enabled"></Column>
         </DataTable>
       </div>
-      <div className="vertical-align-baseline">
+      <div className="flex flex-row gap-4 my-3">
         <Button
           label="New"
           icon="pi pi-check"
