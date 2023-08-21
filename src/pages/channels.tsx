@@ -134,27 +134,32 @@ const Channels = () => {
   } = useQuery({
     queryKey: ["channels", lazyState],
     queryFn: async () => {
-      const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
-      const res = await fetch(
-        `/api/admin/crud/channels?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`
-      );
-      const values = await res.json();
+      try {
+        const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
 
-      const resPowerMeters = await fetch(`/api/admin/crud/power_meter`);
-      const powerMetersValues = await resPowerMeters.json();
+        const res = await fetch(
+          `/api/admin/crud/channels?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`
+        )
+        const values = await res.json();
 
-      values.forEach((element: ChannelValues, idx: number) => {
-        const result = powerMetersValues.filter(
-          (powerMeter: PowerMeterValues) => {
-            return powerMeter.id === element.power_meter_id;
+        const resPowerMeters = await fetch(`/api/admin/crud/power_meter`);
+        const powerMetersValues = await resPowerMeters.json();
+
+        values.forEach((element: ChannelValues, idx: number) => {
+          const result = powerMetersValues.filter(
+            (powerMeter: PowerMeterValues) => {
+              return powerMeter.id === element.power_meter_id;
+            }
+          );
+          if (result.length > 0) {
+            values[idx].assset_name = result[0].asset_name;
           }
-        );
-        if (result.length > 0) {
-          values[idx].assset_name = result[0].asset_name;
-        }
-        values[idx].enabled = values[idx].enabled ? true : false;
-      });
-      return values;
+          values[idx].enabled = values[idx].enabled ? true : false;
+        });
+        return values;
+      } catch (e: any) {
+        show("error", "Please check is the powermeter-api runing.")
+      }
     },
   });
 
@@ -164,12 +169,16 @@ const Channels = () => {
   const { data: count, isLoading: isCountLoading } = useQuery<number>({
     queryKey: ["channelscount", lazyState],
     queryFn: async () => {
-      const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
-      const res = await fetch(
-        `/api/admin/crud/channels/count?filter=${filters}`
-      );
-      const { count } = await res.json();
-      return count;
+      try {
+        const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
+        const res = await fetch(
+          `/api/admin/crud/channels/count?filter=${filters}`
+        );
+        const { count } = await res.json();
+        return count;
+      } catch (e: any) {
+        show("error", "Please check is the powermeter-api runing.")
+      }
     },
   });
 
@@ -213,43 +222,60 @@ const Channels = () => {
       enabled: data.enabled,
     };
     if (editedRow && editedRow.id) {
-      fetch("/api/admin/crud/channels/" + editedRow.id, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-cache",
-        body: JSON.stringify(params),
-      })
-        .then((response) => {
-          return response.json();
+      try {
+        fetch("/api/admin/crud/channels/" + editedRow.id, {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-cache",
+          body: JSON.stringify(params),
         })
-        .then((data) => {
-          updatePage();
-          setVisible(false);
-          show("success", `Updated channel: ${JSON.stringify(data)}`);
-        })
-        .catch((err) => show("error", err));
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            updatePage();
+            setVisible(false);
+            show("success", `Updated channel: ${JSON.stringify(data)}`);
+          })
+          .catch((err) => {
+            show("error", err)
+          });
+      } catch (e: any) {
+        show("error", "Please check is the powermeter-api runing.")
+      }
     } else {
-      fetch("/api/admin/crud/channels", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-cache",
-        body: JSON.stringify(params),
-      })
-        .then((response) => {
-          return response.json();
+      try {
+        fetch("/api/admin/crud/channels", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-cache",
+          body: JSON.stringify(params),
         })
-        .then((data) => {
-          updatePage();
-          setVisible(false);
-          show("success", `Saved channel: ${JSON.stringify(data)}`);
-        })
-        .catch((err) => show("error", err));
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Please check is the powermeter-api runing.");
+            }
+          })
+          .then((data) => {
+            updatePage();
+            setVisible(false);
+            show("success", `Saved channel: ${JSON.stringify(data)}`);
+          })
+          .catch((err: Error) => {
+            show("error", err.message);
+            setVisible(false);
+          });
+      } catch (e) {
+        show("error", "Please check is the powermeter-api runing.")
+      }
     }
   };
 
@@ -281,9 +307,13 @@ const Channels = () => {
    * Power meter values fetch
    */
   const fetchPower_meterValues = async () => {
-    let response = await fetch("/api/admin/crud/power_meter");
-    let data = await response.json();
-    setPower_meterValues(data);
+    try {
+      let response = await fetch("/api/admin/crud/power_meter");
+      let data = await response.json();
+      setPower_meterValues(data);
+    } catch (e: any) {
+      show("error", "Please check is the powermeter-api runing.")
+    }
   };
 
   /**
@@ -310,24 +340,28 @@ const Channels = () => {
    */
   const deleteSelectedRow = () => {
     if (selectedRow) {
-      fetch("/api/admin/crud/channels/" + selectedRow.id, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        cache: "no-cache",
-        body: JSON.stringify({ action: "delete" }),
-      })
-        .then((response) => {
-          return response.json();
+      try {
+        fetch("/api/admin/crud/channels/" + selectedRow.id, {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          cache: "no-cache",
+          body: JSON.stringify({ action: "delete" }),
         })
-        .then((data) => {
-          show("success", `Deleted channels: ${JSON.stringify(data)}`);
-          updatePage();
-        })
-        .catch((err) => show("error", err));
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            show("success", `Deleted channels: ${JSON.stringify(data)}`);
+            updatePage();
+          })
+          .catch((err) => show("error", err));
+      } catch (e: any) {
+        show("error", "Please check is the powermeter-api runing.")
+      }
     }
   };
 
@@ -342,10 +376,14 @@ const Channels = () => {
    */
   const exportCSV = async (selectionOnly: boolean) => {
     //dt.current.exportCSV({ selectionOnly });
-    let result = await fetch("/api/admin/crud/channels");
-    let data = await result.json();
-    let csv = convertToCSV(data);
-    downloadCSVFile(csv, "download.csv");
+    try {
+      let result = await fetch("/api/admin/crud/channels");
+      let data = await result.json();
+      let csv = convertToCSV(data);
+      downloadCSVFile(csv, "download.csv");
+    } catch (e: any) {
+      show("error", "Please check is the powermeter-api runing.")
+    }
   };
 
   const header = (

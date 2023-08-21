@@ -154,7 +154,10 @@ const Home = () => {
    */
   const fetchPower_meterValues = async () => {
     let response = await fetch("/api/admin/crud/power_meter");
-    let data = await response.json();
+    let data: [] = [];
+    if (response.ok) {
+      data = await response.json();
+    }
     return data;
   };
 
@@ -287,15 +290,17 @@ const Home = () => {
                     "p-invalid": fieldState.invalid,
                   })}
                   onChange={(event) => {
-                    let powermeter = power_meterValues.filter(
-                      (item: PowerMeterValues) => {
-                        return item.ip_address === event.target.value;
+                    if (power_meterValues) {
+                      let powermeter: PowerMeterValues[] = power_meterValues.filter(
+                        (item: PowerMeterValues) => {
+                          return item.ip_address === event.target.value;
+                        }
+                      );
+                      if (Array.isArray(powermeter) && powermeter.length > 0 && powermeter[0].id) {
+                        fetchChannels(powermeter[0].id);
                       }
-                    );
-                    if (powermeter.length > 0) {
-                      fetchChannels(powermeter[0].id);
+                      field.onChange(event.target.value);
                     }
-                    field.onChange(event.target.value);
                   }}
                   options={power_meterValues}
                   optionLabel="asset_name"

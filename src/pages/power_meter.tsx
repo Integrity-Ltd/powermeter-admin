@@ -236,7 +236,9 @@ export default function PowerMeter() {
           setVisible(false);
           show("success", `Updated powermeter: ${JSON.stringify(data)}`);
         })
-        .catch((err) => show("error", err));
+        .catch((err) => {
+          show("error", err)
+        });
       setLoading(false);
     } else {
       fetch("/api/admin/crud/power_meter", {
@@ -249,16 +251,23 @@ export default function PowerMeter() {
         body: JSON.stringify(params),
       })
         .then((response) => {
-          return response.json();
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Please check is the powermeter-api runing.");
+          }
         })
         .then((data) => {
           setLoading(false);
-
-          updatePage();
           setVisible(false);
           show("success", `Saved powermeter: ${JSON.stringify(data)}`);
+          updatePage();
         })
-        .catch((err) => show("error", err));
+        .catch((err: Error) => {
+          setLoading(false);
+          setVisible(false);
+          show("error", err.message);
+        });
     }
   };
 
