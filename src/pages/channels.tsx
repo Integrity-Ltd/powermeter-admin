@@ -53,7 +53,7 @@ const Channels = () => {
    */
   const [lazyState, setLazyState] = useState<DataTableStateEvent>({
     first: 0,
-    rows: 10,
+    rows: 100,
     page: 0,
     pageCount: 0,
     sortField: "",
@@ -552,7 +552,7 @@ const Channels = () => {
           first={lazyState.first}
           paginator={true}
           lazy={true}
-          rows={10}
+          rows={100}
           totalRecords={count ?? 0}
           onPage={onPage}
           loading={isDataLoading || isCountLoading}
