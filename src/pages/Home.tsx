@@ -100,13 +100,26 @@ const Home = () => {
    * @param data the form input values
    */
   const onSubmit = (data: FormValues) => {
+    const yearDiff = (dayjs(data.toDate).get("year") - dayjs(data.fromDate).get("year"));
+    const toMonth = dayjs(data.toDate).get("month");
+    const toDay = dayjs(data.toDate).get("date");
     if (
       dayjs(data.fromDate).get("year") < dayjs().get("year") &&
       data.details !== "monthly"
     ) {
       show(
         "error",
-        "Details must be monthly when required year less then current year"
+        "Details must be monthly when required year less then current year."
+      );
+    } else if (yearDiff > 1 || (yearDiff === 1 && !(toMonth === 0 && toDay === 1))) {
+      show(
+        "error",
+        "'From date' and 'To date' must be in same year or 'To Date' in consecutive year janury 1."
+      );
+    } else if (dayjs(data.toDate).isBefore(data.fromDate) || dayjs(data.toDate).isSame(data.fromDate)) {
+      show(
+        "error",
+        "To date must be greater then from date."
       );
     } else {
       updateTable(data);
