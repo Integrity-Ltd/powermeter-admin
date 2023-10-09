@@ -21,7 +21,7 @@ const details = ["hourly", "daily", "monthly"];
  * Home component
  * @returns the Home ReactComponent
  */
-const Home = () => {
+const Expert = () => {
     /**
      * The tabla of measurements
      */
@@ -396,4 +396,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default Expert;

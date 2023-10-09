@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from "./pages/Home";
 import PowerMeter from "./pages/power_meter";
 import Channels from "./pages/channels";
+import Expert from "./pages/expert";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/power_meter" element={<PowerMeter />} />
           <Route path="/channels" element={<Channels />} />
+          <Route path="/expert" element={<Expert />} />
         </Routes>
       </BrowserRouter>
     </div>
