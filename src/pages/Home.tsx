@@ -100,9 +100,7 @@ const Home = () => {
    * @param data the form input values
    */
   const onSubmit = (data: FormValues) => {
-    const yearDiff = (dayjs(data.toDate).get("year") - dayjs(data.fromDate).get("year"));
-    const toMonth = dayjs(data.toDate).get("month");
-    const toDay = dayjs(data.toDate).get("date");
+    const yearDiff = (dayjs(data.toDate).get("year") !== dayjs(data.fromDate).get("year"));
     if (
       dayjs(data.fromDate).get("year") < dayjs().get("year") &&
       data.details !== "monthly"
@@ -111,12 +109,12 @@ const Home = () => {
         "error",
         "Details must be monthly when required year less then current year."
       );
-    } else if (yearDiff > 1 || (yearDiff === 1 && !(toMonth === 0 && toDay === 1))) {
+    } else if (yearDiff) {
       show(
         "error",
-        "'From date' and 'To date' must be in same year or 'To Date' in consecutive year janury 1."
+        "'From date' and 'To date' must be in same year."
       );
-    } else if (dayjs(data.toDate).isBefore(data.fromDate) || dayjs(data.toDate).isSame(data.fromDate)) {
+    } else if (dayjs(data.toDate).isBefore(data.fromDate)) {
       show(
         "error",
         "To date must be greater then from date."
@@ -209,7 +207,7 @@ const Home = () => {
     setIsLoading(true);
     let path = `/api/measurements/report?fromdate=${dayjs(
       params.fromDate
-    ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).format(
+    ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, 'day').format(
       "YYYY-MM-DD"
     )}&ip=${params.ipAddress}&details=${params.details}`;
     if (params.channel > 0) {
@@ -381,15 +379,10 @@ const Home = () => {
           paginator={true}
           rows={100}
         >
-          <Column field="from_local_time" header="From Local Time"></Column>
-          <Column field="to_local_time" header="To Local Time"></Column>
-          <Column field="from_server_time" header="From Server Time"></Column>
-          <Column field="to_server_time" header="To Server Time"></Column>
           <Column field="from_utc_time" header="From UTC Time"></Column>
           <Column field="to_utc_time" header="To UTC Time"></Column>
           <Column field="channel_name" header="Channel"></Column>
-          <Column field="measured_value" header="Measured value"></Column>
-          <Column field="diff" header="Diff"></Column>
+          <Column field="diff" header="Measured value (Wh)"></Column>
         </DataTable>
       </div>
     </div>
