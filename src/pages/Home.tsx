@@ -208,6 +208,7 @@ const Home = () => {
     if (dt && dt.current) {
       dt.current.reset();
     }
+    setMeasurements([]);
     setIsLoading(true);
     let path = `/api/measurements/report?fromdate=${dayjs(
       params.fromDate
@@ -412,7 +413,6 @@ const Home = () => {
           ref={dt}
           header={header}
           tableStyle={{ minWidth: "50rem" }}
-          loading={isLoading}
           paginator={true}
           rows={100}
         >
