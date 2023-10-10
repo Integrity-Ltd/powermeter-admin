@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable, DataTableValueArray } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -11,6 +11,7 @@ import { classNames } from "primereact/utils";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import dayjs from "dayjs";
+import { InputNumber } from "primereact/inputnumber";
 
 /**
  * The report details
@@ -41,15 +42,9 @@ const Home = () => {
     ipAddress: z.string().ip("v4").nonempty(),
     channel: z.number().nullable(),
     details: z.string().nonempty(),
+    multiplier: z.number().nullable(),
   });
 
-  interface formValues {
-    fromDate: string;
-    toDate: string;
-    ipAddress: string;
-    channel: number;
-    details: string;
-  }
 
   /**
    * Toaster reference
@@ -62,6 +57,7 @@ const Home = () => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -82,6 +78,13 @@ const Home = () => {
       });
     }
   };
+
+  /**
+   * Set default values
+   */
+  useEffect(() => {
+    setValue("multiplier", 1);
+  }, [])
 
   /**
    * Form submit error handler
@@ -199,7 +202,7 @@ const Home = () => {
    * Get all measurements
    * @param params parameters of measurements report
    */
-  const updateTable = async (params: formValues) => {
+  const updateTable = async (params: FormValues) => {
     let values = [];
     if (dt && dt.current) {
       dt.current.reset();
@@ -209,7 +212,7 @@ const Home = () => {
       params.fromDate
     ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, 'day').format(
       "YYYY-MM-DD"
-    )}&ip=${params.ipAddress}&details=${params.details}`;
+    )}&ip=${params.ipAddress}&details=${params.details}&multiplier=${params.multiplier}`;
     if (params.channel > 0) {
       path += `&channel=${params.channel}`;
     }
@@ -363,6 +366,26 @@ const Home = () => {
               </>
             )}
           />
+          <Controller
+            name="multiplier"
+            control={control}
+            rules={{ required: "Details is required." }}
+            render={({ field, fieldState }) => (
+              <>
+                <InputNumber id={field.name}
+                  value={field.value}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  tooltip={errors.fromDate?.message}
+                  onValueChange={(event) =>
+                    field.onChange(event.target.value as number)}
+                  style={{ width: '100%' }}
+                  placeholder="Multiplier" />
+              </>
+            )}
+          />
+
           <span className="filter-labels m-auto">
             <Button label="Send" icon="pi pi-check" type="submit" />
           </span>
@@ -383,6 +406,7 @@ const Home = () => {
           <Column field="to_utc_time" header="To UTC Time"></Column>
           <Column field="channel_name" header="Channel"></Column>
           <Column field="diff" header="Measured value (Wh)"></Column>
+          <Column field="multipliedValue" header="Multiplied value"></Column>
         </DataTable>
       </div>
     </div>
