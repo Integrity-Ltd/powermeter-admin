@@ -7,7 +7,7 @@ interface FormValues {
     ipAddress: string;
     channel: number;
     details: string;
-    multiplier: number;
+    multiplier: number | null;
 }
 
 interface PowerMeterValues {

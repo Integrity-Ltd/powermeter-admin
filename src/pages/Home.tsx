@@ -83,7 +83,7 @@ const Home = () => {
    * Set default values
    */
   useEffect(() => {
-    setValue("multiplier", 1);
+    setValue("multiplier", null);
   }, [])
 
   /**
@@ -219,15 +219,17 @@ const Home = () => {
     const res = await fetch(path);
     values = await res.json();
     setIsLoading(false);
-    if (channels) {
-      values.forEach((records: RecElement) => {
-        let channel_names = channels.filter(
-          (ch) => ch.channel === records.channel
-        );
-        if (channel_names.length > 0) {
-          records.channel_name = channel_names[0].channel_name;
-        }
-      });
+    if (Array.isArray(values) && values.length > 0) {
+      if (channels) {
+        values.forEach((records: RecElement) => {
+          let channel_names = channels.filter(
+            (ch) => ch.channel === records.channel
+          );
+          if (channel_names.length > 0) {
+            records.channel_name = channel_names[0].channel_name;
+          }
+        });
+      }
     }
     if (values.err) {
       show("error", values.err);
@@ -404,9 +406,9 @@ const Home = () => {
         >
           <Column field="from_utc_time" header="From UTC Time"></Column>
           <Column field="to_utc_time" header="To UTC Time"></Column>
-          <Column field="channel_name" header="Channel"></Column>
-          <Column field="diff" header="Measured value (Wh)"></Column>
-          <Column field="multipliedValue" header="Multiplied value"></Column>
+          <Column align={"center"} field="channel_name" header="Channel"></Column>
+          <Column align={"right"} field="diff" header="Measured value (Wh)"></Column>
+          <Column align={"right"} field="multipliedValue" header="Multiplied value"></Column>
         </DataTable>
       </div>
     </div>
