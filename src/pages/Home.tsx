@@ -12,6 +12,7 @@ import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import dayjs from "dayjs";
 import { InputNumber } from "primereact/inputnumber";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 /**
  * The report details
@@ -84,7 +85,7 @@ const Home = () => {
    */
   useEffect(() => {
     setValue("multiplier", null);
-  }, [])
+  }, [setValue])
 
   /**
    * Form submit error handler
@@ -218,7 +219,6 @@ const Home = () => {
     }
     const res = await fetch(path);
     values = await res.json();
-    setIsLoading(false);
     if (Array.isArray(values) && values.length > 0) {
       if (channels) {
         values.forEach((records: RecElement) => {
@@ -231,6 +231,7 @@ const Home = () => {
         });
       }
     }
+    setIsLoading(false);
     if (values.err) {
       show("error", values.err);
       values = [];
@@ -393,6 +394,17 @@ const Home = () => {
           </span>
         </form>
       </div>
+      {
+        isLoading &&
+        <div className="absolute w-full h-full surface-400 opacity-50 top-0 left-0 z-5 flex justify-content-center align-items-center">
+          <ProgressSpinner
+            style={{ width: "50px", height: "50px" }}
+            strokeWidth="8"
+            fill="var(--surface-ground)"
+            animationDuration=".5s"
+          />
+        </div>
+      }
 
       <div className="card w-full">
         <DataTable
