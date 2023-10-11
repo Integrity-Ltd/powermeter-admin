@@ -373,7 +373,7 @@ const Home = () => {
           <Controller
             name="multiplier"
             control={control}
-            rules={{ required: "Details is required." }}
+            rules={{}}
             render={({ field, fieldState }) => (
               <>
                 <InputNumber id={field.name}
