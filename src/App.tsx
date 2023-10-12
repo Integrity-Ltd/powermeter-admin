@@ -5,9 +5,11 @@ import "primeflex/primeflex.css";
 import Navigation from './components/Nav';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from "./pages/Home";
-import PowerMeter from "./pages/power_meter";
+import Assets from "./pages/assets";
 import Channels from "./pages/channels";
-import Expert from "./pages/expert";
+import Expert from "./pages/measurements_expert";
+import Simple from "./pages/measurements_simple";
+import MeasurementsSQLite from "./pages/measurements_sqlite";
 
 function App() {
   return (
@@ -16,9 +18,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/power_meter" element={<PowerMeter />} />
+          <Route path="/assets" element={<Assets />} />
           <Route path="/channels" element={<Channels />} />
-          <Route path="/expert" element={<Expert />} />
+          <Route path="/measurements_sqlite" element={<MeasurementsSQLite />} />
+          <Route path="/measurements_expert" element={<Expert />} />
+          <Route path="/measurements_simple" element={<Simple />} />
         </Routes>
       </BrowserRouter>
     </div>

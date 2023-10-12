@@ -8,7 +8,7 @@ import {
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
-import { useForm, Controller, FieldErrors, set } from "react-hook-form";
+import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Checkbox } from "primereact/checkbox";
@@ -72,7 +72,7 @@ const schema = z.object({
  *
  * @returns the power meter ReactComponent
  */
-export default function PowerMeter() {
+export default function Assets() {
   const queryClient = useQueryClient();
   /**
    * Lazy data model state
@@ -367,7 +367,7 @@ export default function PowerMeter() {
     <>
       <div className="grid cols-2 justify-content-end w-ull">
         <div className="flex justify-content-end w-6 ">
-          <h2>PowerMeter</h2>
+          <h2>Assets</h2>
         </div>
         <div className="flex align-items-center justify-content-end gap-2 end w-6">
           <Button

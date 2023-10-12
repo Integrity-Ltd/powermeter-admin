@@ -10,10 +10,31 @@ const Navigation = () => {
       },
     },
     {
-      label: "Power meter",
+      label: "Measurements SQLite",
+      icon: "pi pi-fw pi-home",
+      command: () => {
+        window.location.href = "/measurements_sqlite";
+      },
+    },
+    {
+      label: "Measurements Simple",
+      icon: "pi pi-fw pi-home",
+      command: () => {
+        window.location.href = "/measurements_simple";
+      },
+    },
+    {
+      label: "Measurements Expert",
+      icon: "pi pi-fw pi-home",
+      command: () => {
+        window.location.href = "/measurements_expert";
+      },
+    },
+    {
+      label: "Assets",
       icon: "pi pi-fw pi-calendar",
       command: () => {
-        window.location.href = "/power_meter";
+        window.location.href = "/assets";
       },
     },
     {

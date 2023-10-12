@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable, DataTableValueArray } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -11,6 +11,8 @@ import { classNames } from "primereact/utils";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import dayjs from "dayjs";
+import { InputNumber } from "primereact/inputnumber";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 /**
  * The report details
@@ -21,7 +23,7 @@ const details = ["hourly", "daily", "monthly"];
  * Home component
  * @returns the Home ReactComponent
  */
-const Expert = () => {
+const Simple = () => {
     /**
      * The tabla of measurements
      */
@@ -41,15 +43,9 @@ const Expert = () => {
         ipAddress: z.string().ip("v4").nonempty(),
         channel: z.number().nullable(),
         details: z.string().nonempty(),
+        multiplier: z.number().nullable(),
     });
 
-    interface formValues {
-        fromDate: string;
-        toDate: string;
-        ipAddress: string;
-        channel: number;
-        details: string;
-    }
 
     /**
      * Toaster reference
@@ -62,6 +58,7 @@ const Expert = () => {
     const {
         control,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -84,6 +81,13 @@ const Expert = () => {
     };
 
     /**
+     * Set default values
+     */
+    useEffect(() => {
+        setValue("multiplier", null);
+    }, [setValue])
+
+    /**
      * Form submit error handler
      * @param errors submit errors
      */
@@ -100,9 +104,7 @@ const Expert = () => {
      * @param data the form input values
      */
     const onSubmit = (data: FormValues) => {
-        const yearDiff = (dayjs(data.toDate).get("year") - dayjs(data.fromDate).get("year"));
-        const toMonth = dayjs(data.toDate).get("month");
-        const toDay = dayjs(data.toDate).get("date");
+        const yearDiff = (dayjs(data.toDate).get("year") !== dayjs(data.fromDate).get("year"));
         if (
             dayjs(data.fromDate).get("year") < dayjs().get("year") &&
             data.details !== "monthly"
@@ -111,12 +113,12 @@ const Expert = () => {
                 "error",
                 "Details must be monthly when required year less then current year."
             );
-        } else if (yearDiff > 1 || (yearDiff === 1 && !(toMonth === 0 && toDay === 1))) {
+        } else if (yearDiff) {
             show(
                 "error",
-                "'From date' and 'To date' must be in same year or 'To Date' in consecutive year janury 1."
+                "'From date' and 'To date' must be in same year."
             );
-        } else if (dayjs(data.toDate).isBefore(data.fromDate) || dayjs(data.toDate).isSame(data.fromDate)) {
+        } else if (dayjs(data.toDate).isBefore(data.fromDate)) {
             show(
                 "error",
                 "To date must be greater then from date."
@@ -130,7 +132,7 @@ const Expert = () => {
         <>
             <div className="grid cols-2 justify-content-end w-ull">
                 <div className="flex justify-content-end w-6 ">
-                    <h2>Measurements</h2>
+                    <h2>Measurements Simple</h2>
                 </div>
                 <div className="flex align-items-center justify-content-end gap-2 end w-6">
                     <Button
@@ -201,33 +203,36 @@ const Expert = () => {
      * Get all measurements
      * @param params parameters of measurements report
      */
-    const updateTable = async (params: formValues) => {
+    const updateTable = async (params: FormValues) => {
         let values = [];
         if (dt && dt.current) {
             dt.current.reset();
         }
+        setMeasurements([]);
         setIsLoading(true);
         let path = `/api/measurements/report?fromdate=${dayjs(
             params.fromDate
-        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).format(
+        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, 'day').format(
             "YYYY-MM-DD"
-        )}&ip=${params.ipAddress}&details=${params.details}`;
+        )}&ip=${params.ipAddress}&details=${params.details}&multiplier=${params.multiplier}`;
         if (params.channel > 0) {
             path += `&channel=${params.channel}`;
         }
         const res = await fetch(path);
         values = await res.json();
-        setIsLoading(false);
-        if (channels) {
-            values.forEach((records: RecElement) => {
-                let channel_names = channels.filter(
-                    (ch) => ch.channel === records.channel
-                );
-                if (channel_names.length > 0) {
-                    records.channel_name = channel_names[0].channel_name;
-                }
-            });
+        if (Array.isArray(values) && values.length > 0) {
+            if (channels) {
+                values.forEach((records: RecElement) => {
+                    let channel_names = channels.filter(
+                        (ch) => ch.channel === records.channel
+                    );
+                    if (channel_names.length > 0) {
+                        records.channel_name = channel_names[0].channel_name;
+                    }
+                });
+            }
         }
+        setIsLoading(false);
         if (values.err) {
             show("error", values.err);
             values = [];
@@ -365,11 +370,42 @@ const Expert = () => {
                             </>
                         )}
                     />
+                    <Controller
+                        name="multiplier"
+                        control={control}
+                        rules={{}}
+                        render={({ field, fieldState }) => (
+                            <>
+                                <InputNumber id={field.name}
+                                    value={field.value}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    tooltip={errors.fromDate?.message}
+                                    onValueChange={(event) =>
+                                        field.onChange(event.target.value as number)}
+                                    style={{ width: '100%' }}
+                                    placeholder="Multiplier" />
+                            </>
+                        )}
+                    />
+
                     <span className="filter-labels m-auto">
                         <Button label="Send" icon="pi pi-check" type="submit" />
                     </span>
                 </form>
             </div>
+            {
+                isLoading &&
+                <div className="absolute w-full h-full surface-400 opacity-50 top-0 left-0 z-5 flex justify-content-center align-items-center">
+                    <ProgressSpinner
+                        style={{ width: "50px", height: "50px" }}
+                        strokeWidth="8"
+                        fill="var(--surface-ground)"
+                        animationDuration=".5s"
+                    />
+                </div>
+            }
 
             <div className="card w-full">
                 <DataTable
@@ -377,23 +413,18 @@ const Expert = () => {
                     ref={dt}
                     header={header}
                     tableStyle={{ minWidth: "50rem" }}
-                    loading={isLoading}
                     paginator={true}
                     rows={100}
                 >
-                    <Column field="from_local_time" header="From Local Time"></Column>
-                    <Column field="to_local_time" header="To Local Time"></Column>
-                    <Column field="from_server_time" header="From Server Time"></Column>
-                    <Column field="to_server_time" header="To Server Time"></Column>
-                    <Column field="from_utc_time" header="From UTC Time"></Column>
-                    <Column field="to_utc_time" header="To UTC Time"></Column>
-                    <Column field="channel_name" header="Channel"></Column>
-                    <Column field="measured_value" header="Measured value"></Column>
-                    <Column field="diff" header="Diff"></Column>
+                    <Column field="from_local_time" header="From Date"></Column>
+                    <Column field="to_local_time" header="To Date"></Column>
+                    <Column align={"center"} field="channel_name" header="Channel"></Column>
+                    <Column align={"right"} field="diff" header="Measured value (Wh)"></Column>
+                    <Column align={"right"} field="multipliedValue" header="Multiplied value"></Column>
                 </DataTable>
             </div>
         </div>
     );
 };
 
-export default Expert;
+export default Simple;
