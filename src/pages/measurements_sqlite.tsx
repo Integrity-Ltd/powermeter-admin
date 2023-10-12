@@ -363,7 +363,7 @@ const MeasurementsSQLite = () => {
                     <Column field="recorded_time" header="Recorded time (unix timestamp)"></Column>
                     {/* <Column body={(data) => dayjs.unix(data.recorded_time).format("YYYY.MM.DD HH.mm.ss")} header="Formatted recorded time"></Column> */}
                     <Column align={"center"} field="channel" header="Channel"></Column>
-                    <Column align={"right"} field="measured_value" header="Measured value (kWh)"></Column>
+                    <Column align={"right"} field="measured_value" header="Measured value (Wh)"></Column>
                 </DataTable>
             </div>
         </div>
