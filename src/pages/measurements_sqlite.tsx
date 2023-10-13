@@ -89,15 +89,7 @@ const MeasurementsSQLite = () => {
      */
     const onSubmit = (data: FormValues) => {
         const yearDiff = (dayjs(data.toDate).get("year") !== dayjs(data.fromDate).get("year"));
-        if (
-            dayjs(data.fromDate).get("year") < dayjs().get("year") &&
-            data.details !== "monthly"
-        ) {
-            show(
-                "error",
-                "Details must be monthly when required year less then current year."
-            );
-        } else if (yearDiff) {
+        if (yearDiff) {
             show(
                 "error",
                 "'From date' and 'To date' must be in same year."

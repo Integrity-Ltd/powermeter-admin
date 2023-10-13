@@ -416,8 +416,8 @@ const Simple = () => {
                     paginator={true}
                     rows={100}
                 >
-                    <Column field="from_local_time" header="From Date"></Column>
-                    <Column field="to_local_time" header="To Date"></Column>
+                    <Column field="from_unix_time" header="From Date"></Column>
+                    <Column field="to_unix_time" header="To Date"></Column>
                     <Column align={"center"} field="channel_name" header="Channel"></Column>
                     <Column align={"right"} field="diff" header="Measured value (Wh)"></Column>
                     <Column align={"right"} field="multipliedValue" header="Multiplied value"></Column>

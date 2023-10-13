@@ -381,6 +381,7 @@ const Expert = () => {
                     paginator={true}
                     rows={100}
                 >
+                    <Column field="recorded_time" header="Unix TimeStamp"></Column>
                     <Column field="from_local_time" header="From Local Time"></Column>
                     <Column field="to_local_time" header="To Local Time"></Column>
                     <Column field="from_server_time" header="From Server Time"></Column>

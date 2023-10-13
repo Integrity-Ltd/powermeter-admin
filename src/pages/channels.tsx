@@ -562,7 +562,7 @@ const Channels = () => {
           tableStyle={{ minWidth: "50rem" }}
         >
           <Column selectionMode="single" header="Select one"></Column>
-          <Column field="assset_name" header="Power meter name"></Column>
+          <Column field="assset_name" header="Asset name"></Column>
           <Column field="channel" header="Channel"></Column>
           <Column field="channel_name" header="Channel Name"></Column>
           <Column field="enabled" header="Enabled"></Column>
