@@ -421,12 +421,12 @@ const Channels = () => {
           <Controller
             name="power_meter_id"
             control={control}
-            rules={{ required: "Power meter is required." }}
+            rules={{ required: "Asset is required." }}
             render={({ field, fieldState }) => (
               <>
                 <div className="grid align-items-baseline">
                   <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Power meter: </label>
+                    <label htmlFor={field.name}>Asset: </label>
                   </div>
                   <div className="col-12 md:col-10">
                     <Dropdown
