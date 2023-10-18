@@ -129,7 +129,6 @@ const Channels = () => {
   // eslint-disable-next-line
   const {
     data: channelsValues,
-    status: dataFetchStatus,
     isLoading: isDataLoading,
   } = useQuery({
     queryKey: ["channels", lazyState],
@@ -306,7 +305,8 @@ const Channels = () => {
   /**
    * Power meter values fetch
    */
-  const fetchPower_meterValues = async () => {
+
+  const fetchPower_meterValues = useCallback(async () => {
     try {
       let response = await fetch("/api/admin/crud/power_meter");
       let data = await response.json();
@@ -314,7 +314,7 @@ const Channels = () => {
     } catch (e: any) {
       show("error", "Please check is the powermeter-api runing.")
     }
-  };
+  }, []);
 
   /**
    * EditedRow useEffect
@@ -333,7 +333,7 @@ const Channels = () => {
       setValue("channel_name", "");
       setValue("enabled", false);
     }
-  }, [editedRow, setValue]);
+  }, [editedRow, setValue, fetchPower_meterValues]);
 
   /**
    * Delete selected powermeter with RestAPI

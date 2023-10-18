@@ -18,7 +18,6 @@ import { classNames } from "primereact/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ProgressSpinner } from "primereact/progressspinner";
-import { channel } from "diagnostics_channel";
 
 /**
  * The input form objects
@@ -159,7 +158,7 @@ export default function Assets() {
     },
   });
 
-  const { data: powermeterList, isLoading: isPowermeterLoading } = useQuery({
+  const { data: powermeterList } = useQuery({
     queryKey: ["powermeterlist"],
     queryFn: async () => {
       const res = await fetch(`/api/admin/crud/power_meter`);
