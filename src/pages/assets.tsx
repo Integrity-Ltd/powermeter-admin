@@ -518,8 +518,8 @@ export default function Assets() {
         >
           <Column selectionMode="single" header="Select one"></Column>
           <Column field="asset_name" header="Asset name"></Column>
-          <Column field="power_meter_name" header="Powermeter"></Column>
-          <Column field="channel_name" header="Channel"></Column>
+          <Column field="power_meter_name" header="Powermeter name"></Column>
+          <Column field="channel_name" header="Channel name"></Column>
         </DataTable>
       </div>
       <div className="flex flex-row gap-4 my-3">
