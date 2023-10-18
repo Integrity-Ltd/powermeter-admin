@@ -321,9 +321,9 @@ const Simple = () => {
                                         }
                                     }}
                                     options={power_meterValues}
-                                    optionLabel="asset_name"
+                                    optionLabel="power_meter_name"
                                     optionValue="ip_address"
-                                    placeholder="Select asset"
+                                    placeholder="Select powermeter"
                                 />
                             </>
                         )}

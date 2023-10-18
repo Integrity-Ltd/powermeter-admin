@@ -152,7 +152,7 @@ const Channels = () => {
             }
           );
           if (result.length > 0) {
-            values[idx].assset_name = result[0].asset_name;
+            values[idx].power_meter_name = result[0].power_meter_name;
           }
           values[idx].enabled = values[idx].enabled ? true : false;
         });
@@ -421,12 +421,12 @@ const Channels = () => {
           <Controller
             name="power_meter_id"
             control={control}
-            rules={{ required: "Asset is required." }}
+            rules={{ required: "Powermeter is required." }}
             render={({ field, fieldState }) => (
               <>
                 <div className="grid align-items-baseline">
                   <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Asset: </label>
+                    <label htmlFor={field.name}>Powermeter: </label>
                   </div>
                   <div className="col-12 md:col-10">
                     <Dropdown
@@ -438,7 +438,7 @@ const Channels = () => {
                       value={field.value}
                       onChange={(event) => field.onChange(event.target.value)}
                       options={power_meterValues}
-                      optionLabel="asset_name"
+                      optionLabel="power_meter_name"
                       optionValue="id"
                       placeholder="Select Power meter"
                       style={{ width: "100%" }}
@@ -562,7 +562,7 @@ const Channels = () => {
           tableStyle={{ minWidth: "50rem" }}
         >
           <Column selectionMode="single" header="Select one"></Column>
-          <Column field="assset_name" header="Asset name"></Column>
+          <Column field="power_meter_name" header="Powermeter name"></Column>
           <Column field="channel" header="Channel"></Column>
           <Column field="channel_name" header="Channel Name"></Column>
           <Column field="enabled" header="Enabled"></Column>

@@ -10,6 +10,7 @@ import Channels from "./pages/channels";
 import Expert from "./pages/measurements_expert";
 import Simple from "./pages/measurements_simple";
 import MeasurementsSQLite from "./pages/measurements_sqlite";
+import Powermeter from "./pages/powermeter";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/assets" element={<Assets />} />
+          <Route path="/powermeter" element={<Powermeter />} />
           <Route path="/channels" element={<Channels />} />
           <Route path="/measurements_sqlite" element={<MeasurementsSQLite />} />
           <Route path="/measurements_expert" element={<Expert />} />

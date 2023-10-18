@@ -10,37 +10,15 @@ import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
-import { InputNumber } from "primereact/inputnumber";
-import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { classNames } from "primereact/utils";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ProgressSpinner } from "primereact/progressspinner";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-declare namespace Intl {
-  type Key =
-    | "calendar"
-    | "collation"
-    | "currency"
-    | "numberingSystem"
-    | "timeZone"
-    | "unit";
-
-  function supportedValuesOf(input: Key): string[];
-}
-
-const timeZonesList = Intl.supportedValuesOf("timeZone");
-const defaultTimeZone = dayjs.tz.guess();
+import { channel } from "diagnostics_channel";
 
 /**
  * The input form objects
@@ -49,10 +27,8 @@ const defaultTimeZone = dayjs.tz.guess();
 interface FormValues {
   id: number;
   asset_name: string;
-  ip_address: string;
-  port: number;
-  time_zone: string;
-  enabled: boolean;
+  power_meter_id: number;
+  channel_id: number;
 }
 
 /**
@@ -61,10 +37,8 @@ interface FormValues {
  */
 const schema = z.object({
   asset_name: z.string().nonempty(),
-  ip_address: z.string().ip("v4").nonempty(),
-  port: z.number().min(1),
-  time_zone: z.string().nonempty(),
-  enabled: z.boolean(),
+  power_meter_id: z.number().min(0),
+  channel_id: z.number().min(0),
 });
 
 /**
@@ -88,25 +62,23 @@ export default function Assets() {
     filters: {},
   });
 
-  const getDefaultPowerMeterValues = (): PowerMeterValues => {
+  const getDefaultAssetsValues = (): AssetsValues => {
     return {
       asset_name: "",
-      ip_address: "",
-      port: 50003,
-      time_zone: defaultTimeZone,
-      enabled: false,
+      power_meter_id: 0,
+      channel_id: 0,
     };
   };
   /**
    * The edited row of power meter
    */
-  const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(
-    getDefaultPowerMeterValues()
+  const [editedRow, setEditedRow] = useState<AssetsValues | null>(
+    getDefaultAssetsValues()
   );
   /**
    * The selected row of power meter
    */
-  const [selectedRow, setSelectedRow] = useState<PowerMeterValues | null>(null);
+  const [selectedRow, setSelectedRow] = useState<AssetsValues | null>(null);
   /**
    * Visibility of form editor dialog
    */
@@ -139,7 +111,7 @@ export default function Assets() {
    */
   const onSelectionChange = useCallback(
     (e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
-      setSelectedRow(e.value as PowerMeterValues);
+      setSelectedRow(e.value as AssetsValues);
     },
     []
   );
@@ -148,21 +120,21 @@ export default function Assets() {
    * Reload DataTable and count
    */
   const updatePage = () => {
-    queryClient.invalidateQueries({ queryKey: ["power_meter"] });
-    queryClient.invalidateQueries({ queryKey: ["power_metercount"] });
+    queryClient.invalidateQueries({ queryKey: ["assets"] });
+    queryClient.invalidateQueries({ queryKey: ["assetscount"] });
     setSelectedRow(null);
-    setEditedRow(getDefaultPowerMeterValues());
+    setEditedRow(getDefaultAssetsValues());
   };
 
   /**
    * Power meter data query
    */
-  const { data: power_meterValues, isLoading: isDataLoading } = useQuery({
-    queryKey: ["power_meter", lazyState],
+  const { data: assetsValues, isLoading: isDataLoading } = useQuery({
+    queryKey: ["assets", lazyState],
     queryFn: async () => {
       const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
       const res = await fetch(
-        `/api/admin/crud/power_meter?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`
+        `/api/admin/crud/assets?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`
       );
       let values = await res.json();
       values.forEach((element: PowerMeterValues, idx: number) => {
@@ -176,16 +148,36 @@ export default function Assets() {
    * Power meter count query
    */
   const { data: count, isLoading: isCountLoading } = useQuery<number>({
-    queryKey: ["power_metercount", lazyState],
+    queryKey: ["assetscount", lazyState],
     queryFn: async () => {
       const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
       const res = await fetch(
-        `/api/admin/crud/power_meter/count?filter=${filters}`
+        `/api/admin/crud/assets/count?filter=${filters}`
       );
       const { count } = await res.json();
       return count;
     },
   });
+
+  const { data: powermeterList, isLoading: isPowermeterLoading } = useQuery({
+    queryKey: ["powermeterlist"],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/crud/power_meter`);
+      let values = await res.json();
+      return values;
+    },
+  });
+
+  const [channels, setChannels] = useState<ChannelValues[]>([]);
+
+  const fetchChannels = async (power_meter_id: number) => {
+    let filter = encodeURIComponent(
+      JSON.stringify({ power_meter_id: power_meter_id })
+    );
+    let result = await fetch("/api/admin/crud/channels?filter=" + filter);
+    let data = await result.json();
+    setChannels(data);
+  };
 
   /**
    * Toast reference
@@ -211,14 +203,12 @@ export default function Assets() {
     setLoading(true);
     const params = {
       asset_name: data.asset_name,
-      ip_address: data.ip_address,
-      port: data.port,
-      time_zone: data.time_zone,
-      enabled: data.enabled ? true : false,
+      power_meter_id: data.power_meter_id,
+      channel_id: data.channel_id,
     };
 
     if (editedRow && editedRow.id) {
-      fetch("/api/admin/crud/power_meter/" + editedRow.id, {
+      fetch("/api/admin/crud/assets/" + editedRow.id, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -241,7 +231,7 @@ export default function Assets() {
         });
       setLoading(false);
     } else {
-      fetch("/api/admin/crud/power_meter", {
+      fetch("/api/admin/crud/assets", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -295,17 +285,15 @@ export default function Assets() {
   useEffect(() => {
     //console.log(selectedRows);
     if (editedRow && editedRow.id) {
+      fetchChannels(editedRow.power_meter_id);
       setValue("asset_name", editedRow.asset_name);
-      setValue("ip_address", editedRow.ip_address);
-      setValue("port", editedRow.port);
-      setValue("time_zone", editedRow.time_zone);
-      setValue("enabled", editedRow.enabled ? true : false);
+      setValue("power_meter_id", editedRow.power_meter_id);
+      setValue("channel_id", editedRow.channel_id);
     } else {
+      setChannels([]);
       setValue("asset_name", "");
-      setValue("ip_address", "");
-      setValue("port", 50003);
-      setValue("time_zone", defaultTimeZone);
-      setValue("enabled", false);
+      setValue("power_meter_id", -1);
+      setValue("channel_id", -1);
     }
   }, [editedRow, setValue]);
 
@@ -314,7 +302,7 @@ export default function Assets() {
    */
   const deleteSelectedRow = () => {
     if (selectedRow) {
-      fetch("/api/admin/crud/power_meter/" + selectedRow.id, {
+      fetch("/api/admin/crud/assets/" + selectedRow.id, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -328,7 +316,7 @@ export default function Assets() {
           return response.json();
         })
         .then((data) => {
-          show("success", `Deleted power_meter: ${JSON.stringify(data)}`);
+          show("success", `Deleted asset: ${JSON.stringify(data)}`);
           updatePage();
         })
         .catch((err) => show("error", err));
@@ -433,64 +421,32 @@ export default function Assets() {
             )}
           />
           <Controller
-            name="ip_address"
+            name="power_meter_id"
             control={control}
-            rules={{ required: "IP Address is required." }}
+            rules={{ required: "Powermeter is required." }}
             render={({ field, fieldState }) => (
               <>
                 <div className="grid align-items-baseline">
                   <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>IP Address: </label>
+                    <label htmlFor={field.name}>Powermeter: </label>
                   </div>
                   <div className="col-12 md:col-10">
-                    <InputText
-                      disabled={
-                        editedRow !== undefined &&
-                        editedRow !== null &&
-                        editedRow.id !== undefined &&
-                        editedRow.id > -1
-                      }
-                      id={field.name}
-                      value={field.value || ""}
-                      tooltip={errors.ip_address?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      onChange={field.onChange}
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="port"
-            control={control}
-            rules={{ required: "Port is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Port: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <InputNumber
-                      disabled={
-                        editedRow !== undefined &&
-                        editedRow !== null &&
-                        editedRow.id !== undefined &&
-                        editedRow.id > -1
-                      }
+                    <Dropdown
                       id={field.name}
                       value={field.value}
-                      tooltip={errors.port?.message}
+                      tooltip={errors.channel_id?.message}
                       className={classNames({
                         "p-invalid": fieldState.invalid,
                       })}
-                      onValueChange={(event) =>
-                        field.onChange(event.target.value as number)
-                      }
+                      onChange={(event) => {
+                        fetchChannels(event.target.value);
+                        setValue("channel_id", -1);
+                        field.onChange(event.target.value);
+                      }}
+                      options={powermeterList}
+                      optionLabel="power_meter_name"
+                      optionValue="id"
+                      placeholder="Select powermeter"
                       style={{ width: "100%" }}
                     />
                   </div>
@@ -499,54 +455,30 @@ export default function Assets() {
             )}
           />
           <Controller
-            name="time_zone"
+            name="channel_id"
             control={control}
             rules={{ required: "Time zone is required." }}
             render={({ field, fieldState }) => (
               <>
                 <div className="grid align-items-baseline">
                   <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Time zone: </label>
+                    <label htmlFor={field.name}>Channel: </label>
                   </div>
                   <div className="col-12 md:col-10">
                     <Dropdown
                       id={field.name}
                       value={field.value}
-                      tooltip={errors.time_zone?.message}
+                      tooltip={errors.channel_id?.message}
                       className={classNames({
                         "p-invalid": fieldState.invalid,
                       })}
                       onChange={(event) => field.onChange(event.target.value)}
-                      options={timeZonesList}
-                      placeholder="Select TimeZone"
+                      options={channels}
+                      optionLabel="channel_name"
+                      optionValue="id"
+                      placeholder="Select Channel"
                       style={{ width: "100%" }}
                     />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="enabled"
-            control={control}
-            rules={{ required: "Enabled is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Enabled: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <Checkbox
-                      onChange={(event) =>
-                        field.onChange(event.target.checked ? true : false)
-                      }
-                      tooltip={errors.enabled?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      checked={field.value}
-                    ></Checkbox>
                   </div>
                 </div>
               </>
@@ -567,7 +499,7 @@ export default function Assets() {
       />
       <div className="card">
         <DataTable
-          value={power_meterValues}
+          value={assetsValues}
           ref={dt}
           header={header}
           selectionMode="single"
@@ -587,10 +519,8 @@ export default function Assets() {
         >
           <Column selectionMode="single" header="Select one"></Column>
           <Column field="asset_name" header="Asset name"></Column>
-          <Column field="ip_address" header="IP address"></Column>
-          <Column field="port" header="Port"></Column>
-          <Column field="time_zone" header="Time zone"></Column>
-          <Column field="enabled" header="Enabled"></Column>
+          <Column field="power_meter_name" header="Powermeter"></Column>
+          <Column field="channel_name" header="Channel"></Column>
         </DataTable>
       </div>
       <div className="flex flex-row gap-4 my-3">
@@ -599,7 +529,7 @@ export default function Assets() {
           icon="pi pi-check"
           onClick={() => {
             setSelectedRow(null);
-            setEditedRow(getDefaultPowerMeterValues());
+            setEditedRow(getDefaultAssetsValues());
             setVisible(true);
           }}
         />
@@ -608,7 +538,6 @@ export default function Assets() {
           icon="pi pi-check"
           onClick={() => {
             setEditedRow(selectedRow);
-            control._formValues["time_zone"] = defaultTimeZone;
             setVisible(true);
           }}
           disabled={selectedRow && selectedRow.id ? false : true}

@@ -38,6 +38,13 @@ const Navigation = () => {
       },
     },
     {
+      label: "Powermeter",
+      icon: "pi pi-fw pi-calendar",
+      command: () => {
+        window.location.href = "/powermeter";
+      },
+    },
+    {
       label: "Channels",
       icon: "pi pi-fw pi-calendar",
       command: () => {

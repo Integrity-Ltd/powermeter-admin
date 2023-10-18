@@ -12,11 +12,18 @@ interface FormValues {
 
 interface PowerMeterValues {
     id?: number,
-    asset_name: string,
+    power_meter_name: string,
     ip_address: string,
     port: number,
     time_zone: string,
     enabled: boolean,
+}
+
+interface AssetsValues {
+    id?: number,
+    asset_name: string,
+    power_meter_id: number,
+    channel_id: number,
 }
 
 interface ChannelValues {
