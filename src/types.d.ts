@@ -19,9 +19,15 @@ interface PowerMeterValues {
     enabled: boolean,
 }
 
+interface AssetNameValues {
+    id?: number,
+    name: string,
+};
+
 interface AssetsValues {
     id?: number,
-    asset_name: string,
+    asset_name_id: number,
+    asset_name?: string,
     power_meter_id: number,
     channel_id: number,
 }

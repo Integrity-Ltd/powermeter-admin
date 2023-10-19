@@ -116,7 +116,7 @@ const Expert = () => {
                 "error",
                 "'From date' and 'To date' must be in same year or 'To Date' in consecutive year janury 1."
             );
-        } else if (dayjs(data.toDate).isBefore(data.fromDate) || dayjs(data.toDate).isSame(data.fromDate)) {
+        } else if (dayjs(data.toDate).isBefore(data.fromDate)) {
             show(
                 "error",
                 "To date must be greater then from date."
@@ -209,7 +209,7 @@ const Expert = () => {
         setIsLoading(true);
         let path = `/api/measurements/report?fromdate=${dayjs(
             params.fromDate
-        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).format(
+        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, 'day').format(
             "YYYY-MM-DD"
         )}&ip=${params.ipAddress}&details=${params.details}`;
         if (params.channel > 0) {
@@ -384,8 +384,8 @@ const Expert = () => {
                     <Column field="recorded_time" header="Unix TimeStamp"></Column>
                     <Column field="from_local_time" header="From Local Time"></Column>
                     <Column field="to_local_time" header="To Local Time"></Column>
-                    <Column field="from_server_time" header="From Server Time"></Column>
-                    <Column field="to_server_time" header="To Server Time"></Column>
+                    <Column field="from_powermeter_time" header="From Powermeter Time"></Column>
+                    <Column field="to_powermeter_time" header="To Powermeter Time"></Column>
                     <Column field="from_utc_time" header="From UTC Time"></Column>
                     <Column field="to_utc_time" header="To UTC Time"></Column>
                     <Column field="channel_name" header="Channel"></Column>

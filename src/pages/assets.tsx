@@ -9,7 +9,7 @@ import {
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { useForm, Controller, FieldErrors } from "react-hook-form";
-import { InputText } from "primereact/inputtext";
+import { AutoComplete } from "primereact/autocomplete";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -25,7 +25,8 @@ import { ProgressSpinner } from "primereact/progressspinner";
  */
 interface FormValues {
   id: number;
-  asset_name: string;
+  asset_name_id: number;
+  asset_name: string | undefined;
   power_meter_id: number;
   channel_id: number;
 }
@@ -35,8 +36,7 @@ interface FormValues {
  *
  */
 const schema = z.object({
-  asset_name: z.string().nonempty(),
-  power_meter_id: z.number().min(0),
+  asset_name_id: z.number(),
   channel_id: z.number().min(0),
 });
 
@@ -61,9 +61,11 @@ export default function Assets() {
     filters: {},
   });
 
+  const [assetNamesState, setAssetNamesState] = useState({});
+
   const getDefaultAssetsValues = (): AssetsValues => {
     return {
-      asset_name: "",
+      asset_name_id: 0,
       power_meter_id: 0,
       channel_id: 0,
     };
@@ -90,6 +92,7 @@ export default function Assets() {
   /** Loading state for the saving animation */
   const [loading, setLoading] = useState(false);
 
+  const [assetName, setAssetName] = useState<AssetNameValues | null>(null);
   /**
    * On page request of DataTable
    */
@@ -144,6 +147,22 @@ export default function Assets() {
   });
 
   /**
+   * Power meter names query
+   */
+  const { data: assetNames } = useQuery({
+    queryKey: ["assetnames", assetNamesState],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/admin/crud/assets/asset_names`
+      );
+      if (res.status !== 200) {
+        throw new Error("Error fetching asset names");
+      }
+      let values = await res.json();
+      return values;
+    }
+  });
+  /**
    * Power meter count query
    */
   const { data: count, isLoading: isCountLoading } = useQuery<number>({
@@ -193,16 +212,42 @@ export default function Assets() {
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
+  const saveAssetName = async (asset_name: string) => {
+    let result = await fetch("/api/admin/crud/assets/asset_names", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-cache",
+      body: JSON.stringify({ name: asset_name }),
+    });
+    if (result.status !== 200) {
+      throw new Error("Error saving asset name");
+    }
+    let data = await result.json();
+    return data.lastID as number;
+  }
+
   /**
    * React hook form submit callback. Use for create and update RestAPI calls
    *
    * @param data submited data values
    */
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
+    if (control._formValues['asset_name'].trim() === "") {
+      show("error", "Please fill asset name.");
+      return;
+    }
     setLoading(true);
+    let assetNameId = assetName?.id;
+    if (!assetNameId) {
+      assetNameId = await saveAssetName(control._formValues['asset_name'] as string)
+      queryClient.invalidateQueries({ queryKey: ["assetnames"] });
+    }
+
     const params = {
-      asset_name: data.asset_name,
-      power_meter_id: data.power_meter_id,
+      asset_name_id: assetNameId,
       channel_id: data.channel_id,
     };
 
@@ -285,11 +330,13 @@ export default function Assets() {
     //console.log(selectedRows);
     if (editedRow && editedRow.id) {
       fetchChannels(editedRow.power_meter_id);
+      setValue("asset_name_id", editedRow.asset_name_id);
       setValue("asset_name", editedRow.asset_name);
       setValue("power_meter_id", editedRow.power_meter_id);
       setValue("channel_id", editedRow.channel_id);
     } else {
       setChannels([]);
+      setValue("asset_name_id", -1);
       setValue("asset_name", "");
       setValue("power_meter_id", -1);
       setValue("channel_id", -1);
@@ -350,6 +397,16 @@ export default function Assets() {
     }
   };
 
+  const [items, setItems] = useState<string[]>([]);
+
+  const completeMethod = (e: { query: string }) => {
+    let result = [];
+    if (Array.isArray(assetNames)) {
+      result = assetNames.filter((item: any) => item.name.toLowerCase().startsWith(e.query.toLowerCase())).map((item: any) => item.name);
+    }
+    setItems(result);
+  };
+
   const header = (
     <>
       <div className="grid cols-2 justify-content-end w-ull">
@@ -404,14 +461,22 @@ export default function Assets() {
                     <label htmlFor={field.name}>Asset name: </label>
                   </div>
                   <div className="col-12 md:col-10">
-                    <InputText
+                    <AutoComplete
                       id={field.name}
                       value={field.value || ""}
-                      tooltip={errors.asset_name?.message}
+                      tooltip={errors.asset_name_id?.message}
                       className={classNames({
                         "p-invalid": fieldState.invalid,
                       })}
-                      onChange={field.onChange}
+                      suggestions={items}
+                      completeMethod={completeMethod}
+                      onChange={(e) => {
+                        const assetIdByName = assetNames.find((item: any) => item.name === e.value);
+                        setValue("asset_name_id", assetIdByName?.id || -1);
+                        setAssetName(assetIdByName);
+                        field.onChange(e.value)
+                      }}
+                      dropdown
                       style={{ width: "100%" }}
                     />
                   </div>
