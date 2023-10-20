@@ -244,6 +244,7 @@ export default function Assets() {
     let assetNameId = assetName?.id;
     if (!assetNameId) {
       assetNameId = await saveAssetName(control._formValues['asset_name'] as string)
+      setAssetName({ id: assetNameId, name: control._formValues['asset_name'] as string })
     }
 
     const params = {
