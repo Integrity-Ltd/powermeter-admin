@@ -41,9 +41,9 @@ const schema = z.object({
 });
 
 /**
- * The power mater component
+ * The assets component
  *
- * @returns the power meter ReactComponent
+ * @returns the assets ReactComponent
  */
 export default function Assets() {
   const queryClient = useQueryClient();
@@ -71,13 +71,13 @@ export default function Assets() {
     };
   };
   /**
-   * The edited row of power meter
+   * The edited row of assets
    */
   const [editedRow, setEditedRow] = useState<AssetsValues | null>(
     getDefaultAssetsValues()
   );
   /**
-   * The selected row of power meter
+   * The selected row of assets
    */
   const [selectedRow, setSelectedRow] = useState<AssetsValues | null>(null);
   /**
@@ -101,7 +101,7 @@ export default function Assets() {
   }, []);
 
   /**
-   * Filter on powermeter DataTable
+   * Filter on assets DataTable
    */
   const onFilter = useCallback((event: DataTableStateEvent) => {
     event.first = 0;
@@ -124,12 +124,13 @@ export default function Assets() {
   const updatePage = () => {
     queryClient.invalidateQueries({ queryKey: ["assets"] });
     queryClient.invalidateQueries({ queryKey: ["assetscount"] });
+    queryClient.invalidateQueries({ queryKey: ["assetnames"] });
     setSelectedRow(null);
     setEditedRow(getDefaultAssetsValues());
   };
 
   /**
-   * Power meter data query
+   * Assets data query
    */
   const { data: assetsValues, isLoading: isDataLoading } = useQuery({
     queryKey: ["assets", lazyState],
@@ -147,7 +148,7 @@ export default function Assets() {
   });
 
   /**
-   * Power meter names query
+   * Asset names query
    */
   const { data: assetNames } = useQuery({
     queryKey: ["assetnames", assetNamesState],
@@ -163,7 +164,7 @@ export default function Assets() {
     }
   });
   /**
-   * Power meter count query
+   * Assets count query
    */
   const { data: count, isLoading: isCountLoading } = useQuery<number>({
     queryKey: ["assetscount", lazyState],
@@ -243,7 +244,6 @@ export default function Assets() {
     let assetNameId = assetName?.id;
     if (!assetNameId) {
       assetNameId = await saveAssetName(control._formValues['asset_name'] as string)
-      queryClient.invalidateQueries({ queryKey: ["assetnames"] });
     }
 
     const params = {
@@ -268,7 +268,7 @@ export default function Assets() {
           setLoading(false);
           updatePage();
           setVisible(false);
-          show("success", `Updated powermeter: ${JSON.stringify(data)}`);
+          show("success", `Updated asset: ${JSON.stringify(data)}`);
         })
         .catch((err) => {
           show("error", err)
@@ -294,7 +294,7 @@ export default function Assets() {
         .then((data) => {
           setLoading(false);
           setVisible(false);
-          show("success", `Saved powermeter: ${JSON.stringify(data)}`);
+          show("success", `Saved asset: ${JSON.stringify(data)}`);
           updatePage();
         })
         .catch((err: Error) => {
@@ -344,7 +344,7 @@ export default function Assets() {
   }, [editedRow, setValue]);
 
   /**
-   * Delete selected powermeter with RestAPI
+   * Delete selected asset with RestAPI
    */
   const deleteSelectedRow = () => {
     if (selectedRow) {
@@ -430,7 +430,7 @@ export default function Assets() {
     <div className="card">
       <Toast ref={toast} />
       <Dialog
-        header="Power meter"
+        header="Asset"
         visible={visible}
         onHide={() => setVisible(false)}
         style={{ width: "50vw" }}

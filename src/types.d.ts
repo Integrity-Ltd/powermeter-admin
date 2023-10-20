@@ -10,6 +10,12 @@ interface FormValues {
     multiplier: number | null;
 }
 
+interface StatisticsFormValues {
+    assetNameId: number;
+    details: string;
+}
+
+
 interface PowerMeterValues {
     id?: number,
     power_meter_name: string,
