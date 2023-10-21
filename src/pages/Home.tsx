@@ -224,8 +224,8 @@ const Home = () => {
         >
           <Column align={"center"} field="power_meter_name" header="Powermeter name"></Column>
           <Column align={"center"} field="channel_name" header="Channel"></Column>
-          <Column align={"center"} field="avg" header="AVG"></Column>
-          <Column align={"center"} field="summ" header="Summ"></Column>
+          <Column align={"center"} field="avg" header="AVG (Wh)"></Column>
+          <Column align={"center"} field="summ" header="Summ (Wh)"></Column>
         </DataTable>
       </div>
     </div>
