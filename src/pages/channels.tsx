@@ -564,7 +564,7 @@ const Channels = () => {
           <Column selectionMode="single" header="Select one"></Column>
           <Column field="power_meter_name" header="Powermeter name"></Column>
           <Column field="channel" header="Channel"></Column>
-          <Column field="channel_name" header="Channel Name"></Column>
+          <Column field="channel_name" header="Channel name"></Column>
           <Column field="enabled" header="Enabled"></Column>
         </DataTable>
       </div>

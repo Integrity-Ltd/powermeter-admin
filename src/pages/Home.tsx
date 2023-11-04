@@ -222,10 +222,11 @@ const Home = () => {
           tableStyle={{ minWidth: "50rem" }}
           rows={100}
         >
+          <Column align={"center"} field="asset_name" header="Asset name"></Column>
           <Column align={"center"} field="power_meter_name" header="Powermeter name"></Column>
-          <Column align={"center"} field="channel_name" header="Channel"></Column>
-          <Column align={"center"} field="avg" header="AVG (Wh)"></Column>
-          <Column align={"center"} field="summ" header="Summ (Wh)"></Column>
+          <Column align={"center"} field="channel_name" header="Channel name"></Column>
+          <Column align={"center"} field="avg" header="Average consumption (W)"></Column>
+          <Column align={"center"} field="sum" header="Consumption (Wh)"></Column>
         </DataTable>
       </div>
     </div>
