@@ -8,6 +8,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
 import { useRef, useState } from "react";
+import { Fieldset } from 'primereact/fieldset';
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -26,6 +27,13 @@ const Home = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [allAvgConsumption, setAllAvgConsumption] = useState(0);
+
+  const [allSumConsumption, setAllSumConsumption] = useState(0);
+
+  const [assetName, setAssetName] = useState("");
+
   /**
    * Toaster reference
    */
@@ -128,6 +136,17 @@ const Home = () => {
     const response = await fetch(query);
     if (response.ok) {
       const result = await response.json();
+      let sum = 0;
+      let avg = 0;
+      result.forEach((element: any) => {
+        sum += element.sum;
+        avg += element.avg;
+      });
+      setAllAvgConsumption(avg);
+      setAllSumConsumption(sum);
+      if (result.length > 0) {
+        setAssetName(result[0].asset_name);
+      }
       setMeasurements(result);
     }
     setIsLoading(false);
@@ -228,9 +247,13 @@ const Home = () => {
           <Column align={"center"} field="avg" header="Average consumption (W)"></Column>
           <Column align={"center"} field="sum" header="Consumption (Wh)"></Column>
         </DataTable>
+        <Fieldset legend="Combined">
+          <label>{assetName} - all channels - Average consumption (W): {allAvgConsumption}</label>
+          <br />
+          <label>{assetName} - all channels - Consumption (Wh): {allSumConsumption}</label>
+        </Fieldset>
       </div>
     </div>
-
   )
 };
 
