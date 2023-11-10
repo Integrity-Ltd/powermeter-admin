@@ -390,7 +390,7 @@ const Expert = () => {
                     <Column field="to_utc_time" header="To UTC Time"></Column>
                     <Column field="channel_name" header="Channel"></Column>
                     <Column field="measured_value" header="Measured value (Wh)"></Column>
-                    <Column field="diff" header="Difference (Wh)"></Column>
+                    <Column field="diff" header="Consumption (Wh)"></Column>
                 </DataTable>
             </div>
         </div>
