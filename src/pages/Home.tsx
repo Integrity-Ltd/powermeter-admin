@@ -11,6 +11,7 @@ import { useRef, useState } from "react";
 import { Fieldset } from 'primereact/fieldset';
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import * as z from "zod";
+import * as mathjs from 'mathjs';
 
 const Home = () => {
   /**
@@ -139,11 +140,11 @@ const Home = () => {
       let sum = 0;
       let avg = 0;
       result.forEach((element: any) => {
-        sum += element.sum;
-        avg += element.avg;
+        sum = mathjs.add(mathjs.bignumber(sum), mathjs.bignumber(element.sum));
+        avg = mathjs.add(mathjs.bignumber(avg), mathjs.bignumber(element.avg));
       });
-      setAllAvgConsumption(avg);
-      setAllSumConsumption(sum);
+      setAllAvgConsumption(Number(avg));
+      setAllSumConsumption(Number(sum));
       if (result.length > 0) {
         setAssetName(result[0].asset_name);
       }
