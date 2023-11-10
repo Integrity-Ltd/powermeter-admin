@@ -248,11 +248,13 @@ const Home = () => {
           <Column align={"center"} field="avg" header="Average consumption (W)"></Column>
           <Column align={"center"} field="sum" header="Consumption (Wh)"></Column>
         </DataTable>
-        <Fieldset legend="Combined">
-          <label>{assetName} - all channels - Average consumption (W): {allAvgConsumption}</label>
-          <br />
-          <label>{assetName} - all channels - Consumption (Wh): {allSumConsumption}</label>
-        </Fieldset>
+        {assetName ?
+          <Fieldset legend="Combined">
+            <label>{assetName} - all channels - Average consumption (W): {allAvgConsumption}</label>
+            <br />
+            <label>{assetName} - all channels - Consumption (Wh): {allSumConsumption}</label>
+          </Fieldset>
+          : <></>}
       </div>
     </div>
   )
