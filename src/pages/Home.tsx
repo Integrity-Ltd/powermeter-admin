@@ -142,8 +142,8 @@ const Home = () => {
         sum += element.sum;
         avg += element.avg;
       });
-      setAllAvgConsumption(avg);
-      setAllSumConsumption(sum);
+      setAllAvgConsumption(Math.round(avg * 10000) / 10000);
+      setAllSumConsumption(Math.round(sum * 10000) / 10000);
       if (result.length > 0) {
         setAssetName(result[0].asset_name);
       }
@@ -249,9 +249,9 @@ const Home = () => {
         </DataTable>
         {assetName ?
           <Fieldset legend="Combined">
-            <label>{assetName} - all channels - Average consumption (W): {allAvgConsumption}</label>
+            <label>{assetName} - all channels - average consumption (W): {allAvgConsumption}</label>
             <br />
-            <label>{assetName} - all channels - Consumption (Wh): {allSumConsumption}</label>
+            <label>{assetName} - all channels - consumption (Wh): {allSumConsumption}</label>
           </Fieldset>
           : <></>}
       </div>
