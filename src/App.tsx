@@ -11,6 +11,7 @@ import Expert from "./pages/measurements_expert";
 import Simple from "./pages/measurements_simple";
 import MeasurementsSQLite from "./pages/measurements_sqlite";
 import Powermeter from "./pages/powermeter";
+import Statistics from "./pages/statistics";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/statistics" element={<Statistics />} />
           <Route path="/assets" element={<Assets />} />
           <Route path="/powermeter" element={<Powermeter />} />
           <Route path="/channels" element={<Channels />} />

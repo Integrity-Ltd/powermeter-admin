@@ -10,6 +10,13 @@ const Navigation = () => {
       },
     },
     {
+      label: "Statistics",
+      icon: "pi pi-fw pi-home",
+      command: () => {
+        window.location.href = "/statistics";
+      },
+    },
+    {
       label: "Measurements SQLite",
       icon: "pi pi-fw pi-home",
       command: () => {
