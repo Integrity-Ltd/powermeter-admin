@@ -7,7 +7,7 @@ import { Dropdown } from "primereact/dropdown";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Fieldset } from 'primereact/fieldset';
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import * as z from "zod";
@@ -55,21 +55,21 @@ const Statistics = () => {
    * Export measurements data to CSV
    * @param selectionOnly export only selected data
    */
-    const exportCSV = (selectionOnly: boolean) => {
+    const exportCSV = useCallback((selectionOnly: boolean) => {
         if (dt && dt.current) {
             const currentRef = dt.current;
             currentRef.exportCSV({ selectionOnly });
         }
-    };
+    }, []);
 
-    const fetchAssetNameValues = async () => {
+    const fetchAssetNameValues = useCallback(async () => {
         let response = await fetch("/api/admin/crud/assets/asset_names");
         let data: [] = [];
         if (response.ok) {
             data = await response.json();
         }
         return data;
-    };
+    }, []);
 
     const { data: assetNameValues } = useQuery({
         queryKey: ["assetNameValues"],
@@ -118,19 +118,19 @@ const Statistics = () => {
    * Form submit error handler
    * @param errors submit errors
    */
-    const onSubmitError = (errors: FieldErrors<FormValues>) => {
+    const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
         //console.log(errors);
         show(
             "error",
             "Please fill form as needed. Read tooltips on red marked fields."
         );
-    };
+    }, []);
 
     /**
      * Form submit handler
      * @param data the form input values
      */
-    const onSubmit = async (data: StatisticsFormValues) => {
+    const onSubmit = useCallback(async (data: StatisticsFormValues) => {
         setIsLoading(true);
         const query = "/api/measurements/statistics?asset_name_id=" + data.assetNameId + "&details=" + data.details;
         const response = await fetch(query);
@@ -150,76 +150,80 @@ const Statistics = () => {
             setMeasurements(result);
         }
         setIsLoading(false);
-    }
+    }, [])
+
+    const formComponent = (
+        <form
+            onSubmit={handleSubmit(onSubmit, onSubmitError)}
+            className="flex flex-column w-full gap-4 h-fit sticky "
+            style={{ top: "80px" }}
+        >
+            <Controller
+                name="assetNameId"
+                control={control}
+                rules={{ required: "Time zone is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <Dropdown
+                            id={field.name}
+                            value={field.value}
+                            tooltip={errors.assetNameId?.message}
+                            className={classNames({
+                                "p-invalid": fieldState.invalid,
+                            })}
+                            onChange={(event) => {
+                                field.onChange(event.target.value);
+                            }
+                            }
+                            options={assetNameValues}
+                            optionLabel="name"
+                            optionValue="id"
+                            placeholder="Select asset"
+                        />
+                    </>
+                )}
+            />
+            <Controller
+                name="details"
+                control={control}
+                rules={{ required: "Time zone is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <Dropdown
+                            id={field.name}
+                            value={field.value}
+                            tooltip={errors.assetNameId?.message}
+                            className={classNames({
+                                "p-invalid": fieldState.invalid,
+                            })}
+                            onChange={(event) => {
+                                field.onChange(event.target.value);
+                            }
+                            }
+                            options={[
+                                { id: "1h", name: "1 hour" },
+                                { id: "1d", name: "1 day" },
+                                { id: "30d", name: "30 day" },
+                            ]}
+                            optionLabel="name"
+                            optionValue="id"
+                            placeholder="Select interval"
+                        />
+                    </>
+                )}
+            />
+            <span className="filter-labels m-auto">
+                <Button label="Send" icon="pi pi-check" type="submit" />
+            </span>
+        </form>
+    );
 
     return (
         <div className="card flex flex-row justify-content-start my-5 gap-3">
             <Toast ref={toast} />
 
             <div className=" flex min-h-fit h-screen w-3  ">
-                <form
-                    onSubmit={handleSubmit(onSubmit, onSubmitError)}
-                    className="flex flex-column w-full gap-4 h-fit sticky "
-                    style={{ top: "80px" }}
-                >
-                    <Controller
-                        name="assetNameId"
-                        control={control}
-                        rules={{ required: "Time zone is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <Dropdown
-                                    id={field.name}
-                                    value={field.value}
-                                    tooltip={errors.assetNameId?.message}
-                                    className={classNames({
-                                        "p-invalid": fieldState.invalid,
-                                    })}
-                                    onChange={(event) => {
-                                        field.onChange(event.target.value);
-                                    }
-                                    }
-                                    options={assetNameValues}
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    placeholder="Select asset"
-                                />
-                            </>
-                        )}
-                    />
-                    <Controller
-                        name="details"
-                        control={control}
-                        rules={{ required: "Time zone is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <Dropdown
-                                    id={field.name}
-                                    value={field.value}
-                                    tooltip={errors.assetNameId?.message}
-                                    className={classNames({
-                                        "p-invalid": fieldState.invalid,
-                                    })}
-                                    onChange={(event) => {
-                                        field.onChange(event.target.value);
-                                    }
-                                    }
-                                    options={[
-                                        { id: "1h", name: "1 hour" },
-                                        { id: "1d", name: "1 day" },
-                                        { id: "30d", name: "30 day" },
-                                    ]}
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    placeholder="Select interval"
-                                />
-                            </>
-                        )}
-                    />
-                    <span className="filter-labels m-auto">
-                        <Button label="Send" icon="pi pi-check" type="submit" />
-                    </span>
-                </form>
+                {formComponent}
             </div>
             {
                 isLoading &&

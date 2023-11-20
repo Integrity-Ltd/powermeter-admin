@@ -117,12 +117,12 @@ const Channels = () => {
   /**
    * Reload DataTable and count
    */
-  const updatePage = () => {
+  const updatePage = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["channels"] });
     queryClient.invalidateQueries({ queryKey: ["channelscount"] });
     setSelectedRow(null);
     setEditedRow(getDefaultChannelValue());
-  };
+  }, [queryClient]);
   /**
    * Channels query with RestAPI call
    */
@@ -200,20 +200,20 @@ const Channels = () => {
    * React hook form submition error handler
    * @param errors errors
    */
-  const onSubmitError = (errors: FieldErrors<FormValues>) => {
+  const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
     //console.log(errors);
     show(
       "error",
       "Please fill form as needed. Read tooltips on red marked fields."
     );
-  };
+  }, []);
 
   /**
    * React hook form submit callback. Use for create and update RestAPI calls
    *
    * @param data submited data values
    */
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = useCallback((data: FormValues) => {
     const params = {
       power_meter_id: data.power_meter_id,
       channel: data.channel,
@@ -276,7 +276,7 @@ const Channels = () => {
         show("error", "Please check is the powermeter-api runing.")
       }
     }
-  };
+  }, [editedRow, updatePage]);
 
   /**
    * Show message
@@ -338,7 +338,7 @@ const Channels = () => {
   /**
    * Delete selected powermeter with RestAPI
    */
-  const deleteSelectedRow = () => {
+  const deleteSelectedRow = useCallback(() => {
     if (selectedRow) {
       try {
         fetch("/api/admin/crud/channels/" + selectedRow.id, {
@@ -363,7 +363,7 @@ const Channels = () => {
         show("error", "Please check is the powermeter-api runing.")
       }
     }
-  };
+  }, [selectedRow]);
 
   /**
    * DataTable reference
@@ -374,7 +374,7 @@ const Channels = () => {
    * Export measurements data to CSV
    * @param selectionOnly export only selected data
    */
-  const exportCSV = async (selectionOnly: boolean) => {
+  const exportCSV = useCallback(async (selectionOnly: boolean) => {
     //dt.current.exportCSV({ selectionOnly });
     try {
       let result = await fetch("/api/admin/crud/channels");
@@ -384,7 +384,7 @@ const Channels = () => {
     } catch (e: any) {
       show("error", "Please check is the powermeter-api runing.")
     }
-  };
+  }, []);
 
   const header = (
     <>
@@ -405,6 +405,127 @@ const Channels = () => {
     </>
   );
 
+  const formComoonent = (
+    <form
+      onSubmit={handleSubmit(onSubmit, onSubmitError)}
+      style={{ width: "100%" }}
+    >
+      <Controller
+        name="power_meter_id"
+        control={control}
+        rules={{ required: "Powermeter is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Powermeter: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <Dropdown
+                  id={field.name}
+                  tooltip={errors.power_meter_id?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  value={field.value}
+                  onChange={(event) => field.onChange(event.target.value)}
+                  options={power_meterValues}
+                  optionLabel="power_meter_name"
+                  optionValue="id"
+                  placeholder="Select Power meter"
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <Controller
+        name="channel"
+        control={control}
+        rules={{ required: "channel is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Channel: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <InputNumber
+                  id={field.name}
+                  value={field.value || 0}
+                  tooltip={errors.channel?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  onValueChange={(event) =>
+                    field.onChange(event.target.value as number)
+                  }
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <Controller
+        name="channel_name"
+        control={control}
+        rules={{ required: "channel_name is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Channel name: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <InputText
+                  id={field.name}
+                  value={field.value || ""}
+                  tooltip={errors.channel_name?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  onChange={field.onChange}
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <Controller
+        name="enabled"
+        control={control}
+        rules={{ required: "enabled is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Enabled: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <Checkbox
+                  onChange={(event) =>
+                    field.onChange(event.target.checked ? true : false)
+                  }
+                  tooltip={errors.enabled?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  checked={field.value}
+                ></Checkbox>
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <div className="flex justify-content-end">
+        <Button label="Submit" type="submit" icon="pi pi-check" />
+      </div>
+    </form>
+  );
+
   return (
     <div className="card">
       <Toast ref={toast} />
@@ -414,124 +535,9 @@ const Channels = () => {
         onHide={() => setVisible(false)}
         style={{ width: "50vw" }}
       >
-        <form
-          onSubmit={handleSubmit(onSubmit, onSubmitError)}
-          style={{ width: "100%" }}
-        >
-          <Controller
-            name="power_meter_id"
-            control={control}
-            rules={{ required: "Powermeter is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Powermeter: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <Dropdown
-                      id={field.name}
-                      tooltip={errors.power_meter_id?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      value={field.value}
-                      onChange={(event) => field.onChange(event.target.value)}
-                      options={power_meterValues}
-                      optionLabel="power_meter_name"
-                      optionValue="id"
-                      placeholder="Select Power meter"
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="channel"
-            control={control}
-            rules={{ required: "channel is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Channel: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <InputNumber
-                      id={field.name}
-                      value={field.value || 0}
-                      tooltip={errors.channel?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      onValueChange={(event) =>
-                        field.onChange(event.target.value as number)
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="channel_name"
-            control={control}
-            rules={{ required: "channel_name is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Channel name: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <InputText
-                      id={field.name}
-                      value={field.value || ""}
-                      tooltip={errors.channel_name?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      onChange={field.onChange}
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="enabled"
-            control={control}
-            rules={{ required: "enabled is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Enabled: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <Checkbox
-                      onChange={(event) =>
-                        field.onChange(event.target.checked ? true : false)
-                      }
-                      tooltip={errors.enabled?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      checked={field.value}
-                    ></Checkbox>
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <div className="flex justify-content-end">
-            <Button label="Submit" type="submit" icon="pi pi-check" />
-          </div>
-        </form>
+
+        {formComoonent}
+
       </Dialog>
       <ConfirmDialog
         visible={confirmDialogVisible}

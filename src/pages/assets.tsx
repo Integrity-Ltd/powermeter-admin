@@ -63,13 +63,13 @@ export default function Assets() {
 
   const [assetNamesState, setAssetNamesState] = useState({});
 
-  const getDefaultAssetsValues = (): AssetsValues => {
+  const getDefaultAssetsValues = useCallback((): AssetsValues => {
     return {
       asset_name_id: 0,
       power_meter_id: 0,
       channel_id: 0,
     };
-  };
+  }, []);
   /**
    * The edited row of assets
    */
@@ -121,13 +121,13 @@ export default function Assets() {
   /**
    * Reload DataTable and count
    */
-  const updatePage = () => {
+  const updatePage = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["assets"] });
     queryClient.invalidateQueries({ queryKey: ["assetscount"] });
     queryClient.invalidateQueries({ queryKey: ["assetnames"] });
     setSelectedRow(null);
     setEditedRow(getDefaultAssetsValues());
-  };
+  }, [queryClient, getDefaultAssetsValues]);
 
   /**
    * Assets data query
@@ -189,14 +189,14 @@ export default function Assets() {
 
   const [channels, setChannels] = useState<ChannelValues[]>([]);
 
-  const fetchChannels = async (power_meter_id: number) => {
+  const fetchChannels = useCallback(async (power_meter_id: number) => {
     let filter = encodeURIComponent(
       JSON.stringify({ power_meter_id: power_meter_id })
     );
     let result = await fetch("/api/admin/crud/channels?filter=" + filter);
     let data = await result.json();
     setChannels(data);
-  };
+  }, []);
 
   /**
    * Toast reference
@@ -213,7 +213,7 @@ export default function Assets() {
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const saveAssetName = async (asset_name: string) => {
+  const saveAssetName = useCallback(async (asset_name: string) => {
     let result = await fetch("/api/admin/crud/assets/asset_names", {
       method: "POST",
       credentials: "include",
@@ -228,14 +228,14 @@ export default function Assets() {
     }
     let data = await result.json();
     return data.lastID as number;
-  }
+  }, []);
 
   /**
    * React hook form submit callback. Use for create and update RestAPI calls
    *
    * @param data submited data values
    */
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = useCallback(async (data: FormValues) => {
     if (control._formValues['asset_name'].trim() === "") {
       show("error", "Please fill asset name.");
       return;
@@ -304,7 +304,7 @@ export default function Assets() {
           show("error", err.message);
         });
     }
-  };
+  }, [control, editedRow, saveAssetName, updatePage, assetName]);
 
   /**
    * Show message
@@ -347,7 +347,7 @@ export default function Assets() {
   /**
    * Delete selected asset with RestAPI
    */
-  const deleteSelectedRow = () => {
+  const deleteSelectedRow = useCallback(() => {
     if (selectedRow) {
       fetch("/api/admin/crud/assets/" + selectedRow.id, {
         method: "DELETE",
@@ -368,19 +368,19 @@ export default function Assets() {
         })
         .catch((err) => show("error", err));
     }
-  };
+  }, [selectedRow, updatePage]);
 
   /**
    * React hook form submition error handler
    * @param errors errors
    */
-  const onSubmitError = (errors: FieldErrors<FormValues>) => {
+  const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
     //console.log(errors);
     show(
       "error",
       "Please fill form as needed. Read tooltips on red marked fields."
     );
-  };
+  }, []);
 
   /**
    * DataTable reference
@@ -391,22 +391,22 @@ export default function Assets() {
    * Export measurements data to CSV
    * @param selectionOnly export only selected data
    */
-  const exportCSV = (selectionOnly: boolean) => {
+  const exportCSV = useCallback((selectionOnly: boolean) => {
     if (dt && dt.current) {
       const currentRef = dt.current;
       currentRef.exportCSV({ selectionOnly });
     }
-  };
+  }, []);
 
   const [items, setItems] = useState<string[]>([]);
 
-  const completeMethod = (e: { query: string }) => {
+  const completeMethod = useCallback((e: { query: string }) => {
     let result = [];
     if (Array.isArray(assetNames)) {
       result = assetNames.filter((item: any) => item.name.toLowerCase().startsWith(e.query.toLowerCase())).map((item: any) => item.name);
     }
     setItems(result);
-  };
+  }, [assetNames]);
 
   const header = (
     <>
@@ -425,6 +425,115 @@ export default function Assets() {
         </div>
       </div>
     </>
+  );
+
+  const formComponent = (
+    <form
+      onSubmit={handleSubmit(onSubmit, onSubmitError)}
+      style={{ width: "100%" }}
+    >
+      <Controller
+        name="asset_name"
+        control={control}
+        rules={{ required: "asset name is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Asset name: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <AutoComplete
+                  id={field.name}
+                  value={field.value || ""}
+                  tooltip={errors.asset_name_id?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  suggestions={items}
+                  completeMethod={completeMethod}
+                  onChange={(e) => {
+                    const assetIdByName = assetNames.find((item: any) => item.name === e.value);
+                    setValue("asset_name_id", assetIdByName?.id || -1);
+                    setAssetName(assetIdByName);
+                    field.onChange(e.value)
+                  }}
+                  dropdown
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <Controller
+        name="power_meter_id"
+        control={control}
+        rules={{ required: "Powermeter is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Powermeter: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <Dropdown
+                  id={field.name}
+                  value={field.value}
+                  tooltip={errors.channel_id?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  onChange={(event) => {
+                    fetchChannels(event.target.value);
+                    setValue("channel_id", -1);
+                    field.onChange(event.target.value);
+                  }}
+                  options={powermeterList}
+                  optionLabel="power_meter_name"
+                  optionValue="id"
+                  placeholder="Select powermeter"
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <Controller
+        name="channel_id"
+        control={control}
+        rules={{ required: "Time zone is required." }}
+        render={({ field, fieldState }) => (
+          <>
+            <div className="grid align-items-baseline">
+              <div className="col-12 mb-2 md:col-2 md:mb-0">
+                <label htmlFor={field.name}>Channel: </label>
+              </div>
+              <div className="col-12 md:col-10">
+                <Dropdown
+                  id={field.name}
+                  value={field.value}
+                  tooltip={errors.channel_id?.message}
+                  className={classNames({
+                    "p-invalid": fieldState.invalid,
+                  })}
+                  onChange={(event) => field.onChange(event.target.value)}
+                  options={channels}
+                  optionLabel="channel_name"
+                  optionValue="id"
+                  placeholder="Select Channel"
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      />
+      <div className="flex justify-content-end">
+        <Button label="Submit" type="submit" icon="pi pi-check" />
+      </div>
+    </form>
   );
 
   return (
@@ -447,112 +556,9 @@ export default function Assets() {
             />
           </div>
         )}
-        <form
-          onSubmit={handleSubmit(onSubmit, onSubmitError)}
-          style={{ width: "100%" }}
-        >
-          <Controller
-            name="asset_name"
-            control={control}
-            rules={{ required: "asset name is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Asset name: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <AutoComplete
-                      id={field.name}
-                      value={field.value || ""}
-                      tooltip={errors.asset_name_id?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      suggestions={items}
-                      completeMethod={completeMethod}
-                      onChange={(e) => {
-                        const assetIdByName = assetNames.find((item: any) => item.name === e.value);
-                        setValue("asset_name_id", assetIdByName?.id || -1);
-                        setAssetName(assetIdByName);
-                        field.onChange(e.value)
-                      }}
-                      dropdown
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="power_meter_id"
-            control={control}
-            rules={{ required: "Powermeter is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Powermeter: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <Dropdown
-                      id={field.name}
-                      value={field.value}
-                      tooltip={errors.channel_id?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      onChange={(event) => {
-                        fetchChannels(event.target.value);
-                        setValue("channel_id", -1);
-                        field.onChange(event.target.value);
-                      }}
-                      options={powermeterList}
-                      optionLabel="power_meter_name"
-                      optionValue="id"
-                      placeholder="Select powermeter"
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="channel_id"
-            control={control}
-            rules={{ required: "Time zone is required." }}
-            render={({ field, fieldState }) => (
-              <>
-                <div className="grid align-items-baseline">
-                  <div className="col-12 mb-2 md:col-2 md:mb-0">
-                    <label htmlFor={field.name}>Channel: </label>
-                  </div>
-                  <div className="col-12 md:col-10">
-                    <Dropdown
-                      id={field.name}
-                      value={field.value}
-                      tooltip={errors.channel_id?.message}
-                      className={classNames({
-                        "p-invalid": fieldState.invalid,
-                      })}
-                      onChange={(event) => field.onChange(event.target.value)}
-                      options={channels}
-                      optionLabel="channel_name"
-                      optionValue="id"
-                      placeholder="Select Channel"
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          />
-          <div className="flex justify-content-end">
-            <Button label="Submit" type="submit" icon="pi pi-check" />
-          </div>
-        </form>
+
+        {formComponent}
+
       </Dialog>
       <ConfirmDialog
         visible={confirmDialogVisible}

@@ -147,12 +147,12 @@ export default function Powermeter() {
     /**
      * Reload DataTable and count
      */
-    const updatePage = () => {
+    const updatePage = useCallback(() => {
         queryClient.invalidateQueries({ queryKey: ["power_meter"] });
         queryClient.invalidateQueries({ queryKey: ["power_metercount"] });
         setSelectedRow(null);
         setEditedRow(getDefaultPowerMeterValues());
-    };
+    }, [queryClient]);
 
     /**
      * Power meter data query
@@ -207,7 +207,7 @@ export default function Powermeter() {
      *
      * @param data submited data values
      */
-    const onSubmit = (data: FormValues) => {
+    const onSubmit = useCallback((data: FormValues) => {
         setLoading(true);
         const params = {
             power_meter_name: data.power_meter_name,
@@ -269,14 +269,14 @@ export default function Powermeter() {
                     show("error", err.message);
                 });
         }
-    };
+    }, [editedRow, updatePage]);
 
     /**
      * Show message
      * @param severity severity of message
      * @param message message to display
      */
-    const show = (
+    const show = useCallback((
         severity: "success" | "info" | "warn" | "error" | undefined,
         message: string
     ) => {
@@ -287,7 +287,7 @@ export default function Powermeter() {
                 detail: message,
             });
         }
-    };
+    }, []);
 
     /**
      * EditedRow useEffect
@@ -312,7 +312,7 @@ export default function Powermeter() {
     /**
      * Delete selected powermeter with RestAPI
      */
-    const deleteSelectedRow = () => {
+    const deleteSelectedRow = useCallback(() => {
         if (selectedRow) {
             fetch("/api/admin/crud/power_meter/" + selectedRow.id, {
                 method: "DELETE",
@@ -333,19 +333,19 @@ export default function Powermeter() {
                 })
                 .catch((err) => show("error", err));
         }
-    };
+    }, [selectedRow]);
 
     /**
      * React hook form submition error handler
      * @param errors errors
      */
-    const onSubmitError = (errors: FieldErrors<FormValues>) => {
+    const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
         //console.log(errors);
         show(
             "error",
             "Please fill form as needed. Read tooltips on red marked fields."
         );
-    };
+    }, []);
 
     /**
      * DataTable reference
@@ -356,12 +356,12 @@ export default function Powermeter() {
      * Export measurements data to CSV
      * @param selectionOnly export only selected data
      */
-    const exportCSV = (selectionOnly: boolean) => {
+    const exportCSV = useCallback((selectionOnly: boolean) => {
         if (dt && dt.current) {
             const currentRef = dt.current;
             currentRef.exportCSV({ selectionOnly });
         }
-    };
+    }, []);
 
     const header = (
         <>
@@ -382,6 +382,163 @@ export default function Powermeter() {
         </>
     );
 
+    const formComponent = (
+        <form
+            onSubmit={handleSubmit(onSubmit, onSubmitError)}
+            style={{ width: "100%" }}
+        >
+            <Controller
+                name="power_meter_name"
+                control={control}
+                rules={{ required: "Powermeter name is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <div className="grid align-items-baseline">
+                            <div className="col-12 mb-2 md:col-2 md:mb-0">
+                                <label htmlFor={field.name}>Power meter name: </label>
+                            </div>
+                            <div className="col-12 md:col-10">
+                                <InputText
+                                    id={field.name}
+                                    value={field.value || ""}
+                                    tooltip={errors.power_meter_name?.message}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    onChange={field.onChange}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+            />
+            <Controller
+                name="ip_address"
+                control={control}
+                rules={{ required: "IP Address is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <div className="grid align-items-baseline">
+                            <div className="col-12 mb-2 md:col-2 md:mb-0">
+                                <label htmlFor={field.name}>IP Address: </label>
+                            </div>
+                            <div className="col-12 md:col-10">
+                                <InputText
+                                    disabled={
+                                        editedRow !== undefined &&
+                                        editedRow !== null &&
+                                        editedRow.id !== undefined &&
+                                        editedRow.id > -1
+                                    }
+                                    id={field.name}
+                                    value={field.value || ""}
+                                    tooltip={errors.ip_address?.message}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    onChange={field.onChange}
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+            />
+            <Controller
+                name="port"
+                control={control}
+                rules={{ required: "Port is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <div className="grid align-items-baseline">
+                            <div className="col-12 mb-2 md:col-2 md:mb-0">
+                                <label htmlFor={field.name}>Port: </label>
+                            </div>
+                            <div className="col-12 md:col-10">
+                                <InputNumber
+                                    disabled={
+                                        editedRow !== undefined &&
+                                        editedRow !== null &&
+                                        editedRow.id !== undefined &&
+                                        editedRow.id > -1
+                                    }
+                                    id={field.name}
+                                    value={field.value}
+                                    tooltip={errors.port?.message}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    onValueChange={(event) =>
+                                        field.onChange(event.target.value as number)
+                                    }
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+            />
+            <Controller
+                name="time_zone"
+                control={control}
+                rules={{ required: "Time zone is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <div className="grid align-items-baseline">
+                            <div className="col-12 mb-2 md:col-2 md:mb-0">
+                                <label htmlFor={field.name}>Time zone: </label>
+                            </div>
+                            <div className="col-12 md:col-10">
+                                <Dropdown
+                                    id={field.name}
+                                    value={field.value}
+                                    tooltip={errors.time_zone?.message}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    onChange={(event) => field.onChange(event.target.value)}
+                                    options={timeZonesList}
+                                    placeholder="Select TimeZone"
+                                    style={{ width: "100%" }}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+            />
+            <Controller
+                name="enabled"
+                control={control}
+                rules={{ required: "Enabled is required." }}
+                render={({ field, fieldState }) => (
+                    <>
+                        <div className="grid align-items-baseline">
+                            <div className="col-12 mb-2 md:col-2 md:mb-0">
+                                <label htmlFor={field.name}>Enabled: </label>
+                            </div>
+                            <div className="col-12 md:col-10">
+                                <Checkbox
+                                    onChange={(event) =>
+                                        field.onChange(event.target.checked ? true : false)
+                                    }
+                                    tooltip={errors.enabled?.message}
+                                    className={classNames({
+                                        "p-invalid": fieldState.invalid,
+                                    })}
+                                    checked={field.value}
+                                ></Checkbox>
+                            </div>
+                        </div>
+                    </>
+                )}
+            />
+            <div className="flex justify-content-end">
+                <Button label="Submit" type="submit" icon="pi pi-check" />
+            </div>
+        </form>
+    );
+
     return (
         <div className="card">
             <Toast ref={toast} />
@@ -392,6 +549,8 @@ export default function Powermeter() {
                 style={{ width: "50vw" }}
                 className="absolute overflow-hidden"
             >
+                {formComponent}
+
                 {loading && (
                     <div className="absolute w-full h-full surface-400 opacity-50 top-0 left-0 z-5 flex justify-content-center align-items-center">
                         <ProgressSpinner
@@ -402,160 +561,6 @@ export default function Powermeter() {
                         />
                     </div>
                 )}
-                <form
-                    onSubmit={handleSubmit(onSubmit, onSubmitError)}
-                    style={{ width: "100%" }}
-                >
-                    <Controller
-                        name="power_meter_name"
-                        control={control}
-                        rules={{ required: "Powermeter name is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <div className="grid align-items-baseline">
-                                    <div className="col-12 mb-2 md:col-2 md:mb-0">
-                                        <label htmlFor={field.name}>Power meter name: </label>
-                                    </div>
-                                    <div className="col-12 md:col-10">
-                                        <InputText
-                                            id={field.name}
-                                            value={field.value || ""}
-                                            tooltip={errors.power_meter_name?.message}
-                                            className={classNames({
-                                                "p-invalid": fieldState.invalid,
-                                            })}
-                                            onChange={field.onChange}
-                                            style={{ width: "100%" }}
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    />
-                    <Controller
-                        name="ip_address"
-                        control={control}
-                        rules={{ required: "IP Address is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <div className="grid align-items-baseline">
-                                    <div className="col-12 mb-2 md:col-2 md:mb-0">
-                                        <label htmlFor={field.name}>IP Address: </label>
-                                    </div>
-                                    <div className="col-12 md:col-10">
-                                        <InputText
-                                            disabled={
-                                                editedRow !== undefined &&
-                                                editedRow !== null &&
-                                                editedRow.id !== undefined &&
-                                                editedRow.id > -1
-                                            }
-                                            id={field.name}
-                                            value={field.value || ""}
-                                            tooltip={errors.ip_address?.message}
-                                            className={classNames({
-                                                "p-invalid": fieldState.invalid,
-                                            })}
-                                            onChange={field.onChange}
-                                            style={{ width: "100%" }}
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    />
-                    <Controller
-                        name="port"
-                        control={control}
-                        rules={{ required: "Port is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <div className="grid align-items-baseline">
-                                    <div className="col-12 mb-2 md:col-2 md:mb-0">
-                                        <label htmlFor={field.name}>Port: </label>
-                                    </div>
-                                    <div className="col-12 md:col-10">
-                                        <InputNumber
-                                            disabled={
-                                                editedRow !== undefined &&
-                                                editedRow !== null &&
-                                                editedRow.id !== undefined &&
-                                                editedRow.id > -1
-                                            }
-                                            id={field.name}
-                                            value={field.value}
-                                            tooltip={errors.port?.message}
-                                            className={classNames({
-                                                "p-invalid": fieldState.invalid,
-                                            })}
-                                            onValueChange={(event) =>
-                                                field.onChange(event.target.value as number)
-                                            }
-                                            style={{ width: "100%" }}
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    />
-                    <Controller
-                        name="time_zone"
-                        control={control}
-                        rules={{ required: "Time zone is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <div className="grid align-items-baseline">
-                                    <div className="col-12 mb-2 md:col-2 md:mb-0">
-                                        <label htmlFor={field.name}>Time zone: </label>
-                                    </div>
-                                    <div className="col-12 md:col-10">
-                                        <Dropdown
-                                            id={field.name}
-                                            value={field.value}
-                                            tooltip={errors.time_zone?.message}
-                                            className={classNames({
-                                                "p-invalid": fieldState.invalid,
-                                            })}
-                                            onChange={(event) => field.onChange(event.target.value)}
-                                            options={timeZonesList}
-                                            placeholder="Select TimeZone"
-                                            style={{ width: "100%" }}
-                                        />
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    />
-                    <Controller
-                        name="enabled"
-                        control={control}
-                        rules={{ required: "Enabled is required." }}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <div className="grid align-items-baseline">
-                                    <div className="col-12 mb-2 md:col-2 md:mb-0">
-                                        <label htmlFor={field.name}>Enabled: </label>
-                                    </div>
-                                    <div className="col-12 md:col-10">
-                                        <Checkbox
-                                            onChange={(event) =>
-                                                field.onChange(event.target.checked ? true : false)
-                                            }
-                                            tooltip={errors.enabled?.message}
-                                            className={classNames({
-                                                "p-invalid": fieldState.invalid,
-                                            })}
-                                            checked={field.value}
-                                        ></Checkbox>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    />
-                    <div className="flex justify-content-end">
-                        <Button label="Submit" type="submit" icon="pi pi-check" />
-                    </div>
-                </form>
             </Dialog>
             <ConfirmDialog
                 visible={confirmDialogVisible}
