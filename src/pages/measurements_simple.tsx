@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable, DataTableValueArray } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -240,164 +240,166 @@ const Simple = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const formComponent = (
-        <form
-            onSubmit={handleSubmit(onSubmit, onSubmitError)}
-            className="flex flex-column w-full gap-4 h-fit sticky "
-            style={{ top: "80px" }}
-        >
-            <Controller
-                name="fromDate"
-                control={control}
-                rules={{ required: "from date is required." }}
-                render={({ field, fieldState }) => (
-                    <>
-                        <Calendar
-                            id={field.name}
-                            value={field.value || ""}
-                            placeholder="From date"
-                            tooltip={errors.fromDate?.message}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            onChange={(event) =>
-                                field.onChange(event.target.value as string)
-                            }
-                            dateFormat="yy-mm-dd"
-                        />
-                    </>
-                )}
-            />
-            <Controller
-                name="toDate"
-                control={control}
-                rules={{ required: "to date is required." }}
-                render={({ field, fieldState }) => (
-                    <>
-                        <Calendar
-                            id={field.name}
-                            value={field.value || ""}
-                            placeholder="To date"
-                            tooltip={errors.fromDate?.message}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            onChange={(event) =>
-                                field.onChange(event.target.value as string)
-                            }
-                            dateFormat="yy-mm-dd"
-                        />
-                    </>
-                )}
-            />
-            <Controller
-                name="ipAddress"
-                control={control}
-                rules={{ required: "Time zone is required." }}
-                render={({ field, fieldState }) => (
-                    <>
-                        <Dropdown
-                            id={field.name}
-                            value={field.value}
-                            tooltip={errors.ipAddress?.message}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            onChange={(event) => {
-                                if (power_meterValues) {
-                                    let powermeter: PowerMeterValues[] = power_meterValues.filter(
-                                        (item: PowerMeterValues) => {
-                                            return item.ip_address === event.target.value;
-                                        }
-                                    );
-                                    if (Array.isArray(powermeter) && powermeter.length > 0 && powermeter[0].id) {
-                                        fetchChannels(powermeter[0].id);
-                                    }
-                                    field.onChange(event.target.value);
+    const formComponent = (): ReactNode => {
+        return (
+            <form
+                onSubmit={handleSubmit(onSubmit, onSubmitError)}
+                className="flex flex-column w-full gap-4 h-fit sticky "
+                style={{ top: "80px" }}
+            >
+                <Controller
+                    name="fromDate"
+                    control={control}
+                    rules={{ required: "from date is required." }}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <Calendar
+                                id={field.name}
+                                value={field.value || ""}
+                                placeholder="From date"
+                                tooltip={errors.fromDate?.message}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                onChange={(event) =>
+                                    field.onChange(event.target.value as string)
                                 }
-                            }}
-                            options={power_meterValues}
-                            optionLabel="power_meter_name"
-                            optionValue="ip_address"
-                            placeholder="Select powermeter"
-                        />
-                    </>
-                )}
-            />
-            <Controller
-                name="channel"
-                control={control}
-                rules={{}}
-                render={({ field, fieldState }) => (
-                    <>
-                        <Dropdown
-                            id={field.name}
-                            value={field.value}
-                            tooltip={errors.channel?.message}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            onChange={(event) => field.onChange(event.target.value)}
-                            options={[{ channel_name: "All", channel: -1 }, ...channels]}
-                            optionLabel="channel_name"
-                            optionValue="channel"
-                            placeholder="Select channel"
-                        />
-                    </>
-                )}
-            />
-            <Controller
-                name="details"
-                control={control}
-                rules={{ required: "Details is required." }}
-                render={({ field, fieldState }) => (
-                    <>
-                        <Dropdown
-                            id={field.name}
-                            value={field.value}
-                            tooltip={errors.ipAddress?.message}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            onChange={(event) => field.onChange(event.target.value)}
-                            options={details}
-                            placeholder="Select details"
-                        />
-                    </>
-                )}
-            />
-            <Controller
-                name="multiplier"
-                control={control}
-                rules={{}}
-                render={({ field, fieldState }) => (
-                    <>
-                        <InputNumber id={field.name}
-                            value={field.value}
-                            className={classNames({
-                                "p-invalid": fieldState.invalid,
-                            })}
-                            tooltip={errors.fromDate?.message}
-                            onValueChange={(event) =>
-                                field.onChange(event.target.value as number)}
-                            style={{ width: '100%' }}
-                            placeholder="Multiplier" />
-                    </>
-                )}
-            />
+                                dateFormat="yy-mm-dd"
+                            />
+                        </>
+                    )}
+                />
+                <Controller
+                    name="toDate"
+                    control={control}
+                    rules={{ required: "to date is required." }}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <Calendar
+                                id={field.name}
+                                value={field.value || ""}
+                                placeholder="To date"
+                                tooltip={errors.fromDate?.message}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                onChange={(event) =>
+                                    field.onChange(event.target.value as string)
+                                }
+                                dateFormat="yy-mm-dd"
+                            />
+                        </>
+                    )}
+                />
+                <Controller
+                    name="ipAddress"
+                    control={control}
+                    rules={{ required: "Time zone is required." }}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <Dropdown
+                                id={field.name}
+                                value={field.value}
+                                tooltip={errors.ipAddress?.message}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                onChange={(event) => {
+                                    if (power_meterValues) {
+                                        let powermeter: PowerMeterValues[] = power_meterValues.filter(
+                                            (item: PowerMeterValues) => {
+                                                return item.ip_address === event.target.value;
+                                            }
+                                        );
+                                        if (Array.isArray(powermeter) && powermeter.length > 0 && powermeter[0].id) {
+                                            fetchChannels(powermeter[0].id);
+                                        }
+                                        field.onChange(event.target.value);
+                                    }
+                                }}
+                                options={power_meterValues}
+                                optionLabel="power_meter_name"
+                                optionValue="ip_address"
+                                placeholder="Select powermeter"
+                            />
+                        </>
+                    )}
+                />
+                <Controller
+                    name="channel"
+                    control={control}
+                    rules={{}}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <Dropdown
+                                id={field.name}
+                                value={field.value}
+                                tooltip={errors.channel?.message}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                onChange={(event) => field.onChange(event.target.value)}
+                                options={[{ channel_name: "All", channel: -1 }, ...channels]}
+                                optionLabel="channel_name"
+                                optionValue="channel"
+                                placeholder="Select channel"
+                            />
+                        </>
+                    )}
+                />
+                <Controller
+                    name="details"
+                    control={control}
+                    rules={{ required: "Details is required." }}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <Dropdown
+                                id={field.name}
+                                value={field.value}
+                                tooltip={errors.ipAddress?.message}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                onChange={(event) => field.onChange(event.target.value)}
+                                options={details}
+                                placeholder="Select details"
+                            />
+                        </>
+                    )}
+                />
+                <Controller
+                    name="multiplier"
+                    control={control}
+                    rules={{}}
+                    render={({ field, fieldState }) => (
+                        <>
+                            <InputNumber id={field.name}
+                                value={field.value}
+                                className={classNames({
+                                    "p-invalid": fieldState.invalid,
+                                })}
+                                tooltip={errors.fromDate?.message}
+                                onValueChange={(event) =>
+                                    field.onChange(event.target.value as number)}
+                                style={{ width: '100%' }}
+                                placeholder="Multiplier" />
+                        </>
+                    )}
+                />
 
-            <span className="filter-labels m-auto">
-                <Button label="Send" icon="pi pi-check" type="submit" />
-            </span>
-        </form>
-    );
+                <span className="filter-labels m-auto">
+                    <Button label="Send" icon="pi pi-check" type="submit" />
+                </span>
+            </form>
+        )
+    };
 
     return (
         <div className="card flex flex-row justify-content-start my-5 gap-3">
             <Toast ref={toast} />
 
             <div className=" flex min-h-fit h-screen w-3  ">
-                {formComponent}
+                {formComponent()}
             </div>
             {
                 isLoading &&

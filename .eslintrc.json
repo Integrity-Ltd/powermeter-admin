@@ -162,7 +162,7 @@
 		"indent": "off",
 		"@typescript-eslint/indent": [
 			"warn",
-			"tab",
+			4,
 			{
 				"SwitchCase": 1,
 				"ignoredNodes": [
@@ -186,7 +186,7 @@
 		],
 		"no-trailing-spaces": "warn",
 		"quotes": "off",
-		"@typescript-eslint/quotes": ["warn", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+		"@typescript-eslint/quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
 		"jsx-quotes": ["warn", "prefer-single"],
 		"@typescript-eslint/array-type": ["warn"],
 		"@typescript-eslint/consistent-type-assertions": [

@@ -19,7 +19,7 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { classNames } from "primereact/utils";
-import { convertToCSV, downloadCSVFile } from "../utils/Converter";
+import { convertToCSV, downloadCsvFile } from "../utils/Converter";
 
 /**
  * The input form objects
@@ -117,9 +117,9 @@ const Channels = () => {
   /**
    * Reload DataTable and count
    */
-  const updatePage = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["channels"] });
-    queryClient.invalidateQueries({ queryKey: ["channelscount"] });
+  const updatePage = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["channels"] });
+    await queryClient.invalidateQueries({ queryKey: ["channelscount"] });
     setSelectedRow(null);
     setEditedRow(getDefaultChannelValue());
   }, [queryClient]);
@@ -156,6 +156,7 @@ const Channels = () => {
           values[idx].enabled = values[idx].enabled ? true : false;
         });
         return values;
+        // eslint-disable-next-line
       } catch (e: any) {
         show("error", "Please check is the powermeter-api runing.")
       }
@@ -175,6 +176,7 @@ const Channels = () => {
         );
         const { count } = await res.json();
         return count;
+        // eslint-disable-next-line
       } catch (e: any) {
         show("error", "Please check is the powermeter-api runing.")
       }
@@ -242,6 +244,7 @@ const Channels = () => {
           .catch((err) => {
             show("error", err)
           });
+        // eslint-disable-next-line
       } catch (e: any) {
         show("error", "Please check is the powermeter-api runing.")
       }
@@ -311,6 +314,7 @@ const Channels = () => {
       let response = await fetch("/api/admin/crud/power_meter");
       let data = await response.json();
       setPower_meterValues(data);
+      // eslint-disable-next-line
     } catch (e: any) {
       show("error", "Please check is the powermeter-api runing.")
     }
@@ -359,6 +363,7 @@ const Channels = () => {
             updatePage();
           })
           .catch((err) => show("error", err));
+        // eslint-disable-next-line
       } catch (e: any) {
         show("error", "Please check is the powermeter-api runing.")
       }
@@ -380,7 +385,8 @@ const Channels = () => {
       let result = await fetch("/api/admin/crud/channels");
       let data = await result.json();
       let csv = convertToCSV(data);
-      downloadCSVFile(csv, "download.csv");
+      downloadCsvFile(csv, "download.csv");
+      // eslint-disable-next-line
     } catch (e: any) {
       show("error", "Please check is the powermeter-api runing.")
     }

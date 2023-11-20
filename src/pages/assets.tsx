@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DataTable,
@@ -121,10 +121,10 @@ export default function Assets() {
   /**
    * Reload DataTable and count
    */
-  const updatePage = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["assets"] });
-    queryClient.invalidateQueries({ queryKey: ["assetscount"] });
-    queryClient.invalidateQueries({ queryKey: ["assetnames"] });
+  const updatePage = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["assets"] });
+    await queryClient.invalidateQueries({ queryKey: ["assetscount"] });
+    await queryClient.invalidateQueries({ queryKey: ["assetnames"] });
     setSelectedRow(null);
     setEditedRow(getDefaultAssetsValues());
   }, [queryClient, getDefaultAssetsValues]);
@@ -400,10 +400,15 @@ export default function Assets() {
 
   const [items, setItems] = useState<string[]>([]);
 
+  interface AssetNameValues {
+    id: number;
+    name: string;
+  }
+
   const completeMethod = useCallback((e: { query: string }) => {
-    let result = [];
+    let result: string[] = [];
     if (Array.isArray(assetNames)) {
-      result = assetNames.filter((item: any) => item.name.toLowerCase().startsWith(e.query.toLowerCase())).map((item: any) => item.name);
+      result = assetNames.filter((item: AssetNameValues) => item.name.toLowerCase().startsWith(e.query.toLowerCase())).map((item: AssetNameValues) => item.name);
     }
     setItems(result);
   }, [assetNames]);
@@ -427,114 +432,116 @@ export default function Assets() {
     </>
   );
 
-  const formComponent = (
-    <form
-      onSubmit={handleSubmit(onSubmit, onSubmitError)}
-      style={{ width: "100%" }}
-    >
-      <Controller
-        name="asset_name"
-        control={control}
-        rules={{ required: "asset name is required." }}
-        render={({ field, fieldState }) => (
-          <>
-            <div className="grid align-items-baseline">
-              <div className="col-12 mb-2 md:col-2 md:mb-0">
-                <label htmlFor={field.name}>Asset name: </label>
+  const formComponent = (): ReactNode => {
+    return (
+      <form
+        onSubmit={handleSubmit(onSubmit, onSubmitError)}
+        style={{ width: "100%" }}
+      >
+        <Controller
+          name="asset_name"
+          control={control}
+          rules={{ required: "asset name is required." }}
+          render={({ field, fieldState }) => (
+            <>
+              <div className="grid align-items-baseline">
+                <div className="col-12 mb-2 md:col-2 md:mb-0">
+                  <label htmlFor={field.name}>Asset name: </label>
+                </div>
+                <div className="col-12 md:col-10">
+                  <AutoComplete
+                    id={field.name}
+                    value={field.value || ""}
+                    tooltip={errors.asset_name_id?.message}
+                    className={classNames({
+                      "p-invalid": fieldState.invalid,
+                    })}
+                    suggestions={items}
+                    completeMethod={completeMethod}
+                    onChange={(e) => {
+                      const assetIdByName = assetNames.find((item: AssetNameValues) => item.name === e.value);
+                      setValue("asset_name_id", assetIdByName?.id || -1);
+                      setAssetName(assetIdByName);
+                      field.onChange(e.value)
+                    }}
+                    dropdown
+                    style={{ width: "100%" }}
+                  />
+                </div>
               </div>
-              <div className="col-12 md:col-10">
-                <AutoComplete
-                  id={field.name}
-                  value={field.value || ""}
-                  tooltip={errors.asset_name_id?.message}
-                  className={classNames({
-                    "p-invalid": fieldState.invalid,
-                  })}
-                  suggestions={items}
-                  completeMethod={completeMethod}
-                  onChange={(e) => {
-                    const assetIdByName = assetNames.find((item: any) => item.name === e.value);
-                    setValue("asset_name_id", assetIdByName?.id || -1);
-                    setAssetName(assetIdByName);
-                    field.onChange(e.value)
-                  }}
-                  dropdown
-                  style={{ width: "100%" }}
-                />
+            </>
+          )}
+        />
+        <Controller
+          name="power_meter_id"
+          control={control}
+          rules={{ required: "Powermeter is required." }}
+          render={({ field, fieldState }) => (
+            <>
+              <div className="grid align-items-baseline">
+                <div className="col-12 mb-2 md:col-2 md:mb-0">
+                  <label htmlFor={field.name}>Powermeter: </label>
+                </div>
+                <div className="col-12 md:col-10">
+                  <Dropdown
+                    id={field.name}
+                    value={field.value}
+                    tooltip={errors.channel_id?.message}
+                    className={classNames({
+                      "p-invalid": fieldState.invalid,
+                    })}
+                    onChange={(event) => {
+                      fetchChannels(event.target.value);
+                      setValue("channel_id", -1);
+                      field.onChange(event.target.value);
+                    }}
+                    options={powermeterList}
+                    optionLabel="power_meter_name"
+                    optionValue="id"
+                    placeholder="Select powermeter"
+                    style={{ width: "100%" }}
+                  />
+                </div>
               </div>
-            </div>
-          </>
-        )}
-      />
-      <Controller
-        name="power_meter_id"
-        control={control}
-        rules={{ required: "Powermeter is required." }}
-        render={({ field, fieldState }) => (
-          <>
-            <div className="grid align-items-baseline">
-              <div className="col-12 mb-2 md:col-2 md:mb-0">
-                <label htmlFor={field.name}>Powermeter: </label>
+            </>
+          )}
+        />
+        <Controller
+          name="channel_id"
+          control={control}
+          rules={{ required: "Time zone is required." }}
+          render={({ field, fieldState }) => (
+            <>
+              <div className="grid align-items-baseline">
+                <div className="col-12 mb-2 md:col-2 md:mb-0">
+                  <label htmlFor={field.name}>Channel: </label>
+                </div>
+                <div className="col-12 md:col-10">
+                  <Dropdown
+                    id={field.name}
+                    value={field.value}
+                    tooltip={errors.channel_id?.message}
+                    className={classNames({
+                      "p-invalid": fieldState.invalid,
+                    })}
+                    onChange={(event) => field.onChange(event.target.value)}
+                    options={channels}
+                    optionLabel="channel_name"
+                    optionValue="id"
+                    placeholder="Select Channel"
+                    style={{ width: "100%" }}
+                  />
+                </div>
               </div>
-              <div className="col-12 md:col-10">
-                <Dropdown
-                  id={field.name}
-                  value={field.value}
-                  tooltip={errors.channel_id?.message}
-                  className={classNames({
-                    "p-invalid": fieldState.invalid,
-                  })}
-                  onChange={(event) => {
-                    fetchChannels(event.target.value);
-                    setValue("channel_id", -1);
-                    field.onChange(event.target.value);
-                  }}
-                  options={powermeterList}
-                  optionLabel="power_meter_name"
-                  optionValue="id"
-                  placeholder="Select powermeter"
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      />
-      <Controller
-        name="channel_id"
-        control={control}
-        rules={{ required: "Time zone is required." }}
-        render={({ field, fieldState }) => (
-          <>
-            <div className="grid align-items-baseline">
-              <div className="col-12 mb-2 md:col-2 md:mb-0">
-                <label htmlFor={field.name}>Channel: </label>
-              </div>
-              <div className="col-12 md:col-10">
-                <Dropdown
-                  id={field.name}
-                  value={field.value}
-                  tooltip={errors.channel_id?.message}
-                  className={classNames({
-                    "p-invalid": fieldState.invalid,
-                  })}
-                  onChange={(event) => field.onChange(event.target.value)}
-                  options={channels}
-                  optionLabel="channel_name"
-                  optionValue="id"
-                  placeholder="Select Channel"
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      />
-      <div className="flex justify-content-end">
-        <Button label="Submit" type="submit" icon="pi pi-check" />
-      </div>
-    </form>
-  );
+            </>
+          )}
+        />
+        <div className="flex justify-content-end">
+          <Button label="Submit" type="submit" icon="pi pi-check" />
+        </div>
+      </form>
+    );
+  };
 
   return (
     <div className="card">
@@ -557,7 +564,7 @@ export default function Assets() {
           </div>
         )}
 
-        {formComponent}
+        {formComponent()}
 
       </Dialog>
       <ConfirmDialog
