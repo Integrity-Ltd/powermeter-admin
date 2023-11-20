@@ -17,24 +17,10 @@ const Navigation = () => {
       },
     },
     {
-      label: "Measurements SQLite",
-      icon: "pi pi-fw pi-home",
-      command: () => {
-        window.location.href = "/measurements_sqlite";
-      },
-    },
-    {
       label: "Measurements Simple",
       icon: "pi pi-fw pi-home",
       command: () => {
         window.location.href = "/measurements_simple";
-      },
-    },
-    {
-      label: "Measurements Expert",
-      icon: "pi pi-fw pi-home",
-      command: () => {
-        window.location.href = "/measurements_expert";
       },
     },
     {
