@@ -12,21 +12,21 @@ import Powermeter from "./pages/powermeter";
 import Statistics from "./pages/statistics";
 
 function App() {
-    return (
-        <div>
-            <Navigation />
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/statistics" element={<Statistics />} />
-                    <Route path="/assets" element={<Assets />} />
-                    <Route path="/powermeter" element={<Powermeter />} />
-                    <Route path="/channels" element={<Channels />} />
-                    <Route path="/measurements_simple" element={<Simple />} />
-                </Routes>
-            </BrowserRouter>
-        </div>
-    );
+	return (
+		<div>
+			<Navigation />
+			<BrowserRouter>
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/statistics" element={<Statistics />} />
+					<Route path="/assets" element={<Assets />} />
+					<Route path="/powermeter" element={<Powermeter />} />
+					<Route path="/channels" element={<Channels />} />
+					<Route path="/measurements_simple" element={<Simple />} />
+				</Routes>
+			</BrowserRouter>
+		</div>
+	);
 }
 
 export default App;

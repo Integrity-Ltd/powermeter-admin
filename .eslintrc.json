@@ -162,7 +162,7 @@
 		"indent": "off",
 		"@typescript-eslint/indent": [
 			"warn",
-			4,
+			"tab",
 			{
 				"SwitchCase": 1,
 				"ignoredNodes": [
