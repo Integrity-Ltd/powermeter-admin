@@ -8,10 +8,10 @@ export function convertToCSV(data: any) {
     rows.push(headers.join(","));
 
     // Add data rows
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
     data.forEach((item: any) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        const values = headers.map(header => item[header]);
+        const values = headers.map((header) => item[header]);
         rows.push(values.join(","));
     });
 

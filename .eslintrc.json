@@ -187,7 +187,7 @@
 		"no-trailing-spaces": "warn",
 		"quotes": "off",
 		"@typescript-eslint/quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
-		"jsx-quotes": ["warn", "prefer-single"],
+		"jsx-quotes": ["warn", "prefer-double"],
 		"@typescript-eslint/array-type": ["warn"],
 		"@typescript-eslint/consistent-type-assertions": [
 			"warn",

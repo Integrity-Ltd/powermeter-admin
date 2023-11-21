@@ -12,7 +12,7 @@ import { useForm, Controller, FieldErrors } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Checkbox } from "primereact/checkbox";
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -102,7 +102,7 @@ export default function Powermeter() {
      * The edited row of power meter
      */
     const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(
-        getDefaultPowerMeterValues()
+        getDefaultPowerMeterValues(),
     );
     /**
      * The selected row of power meter
@@ -141,9 +141,7 @@ export default function Powermeter() {
     const onSelectionChange = useCallback(
         (e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
             setSelectedRow(e.value as PowerMeterValues);
-        },
-        []
-    );
+        }, []);
 
     /**
      * Reload DataTable and count
@@ -164,12 +162,16 @@ export default function Powermeter() {
         queryFn: async () => {
             const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
             const res = await fetch(
-                `/api/admin/crud/power_meter?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`
+                `/api/admin/crud/power_meter?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`,
             );
-            let values = await res.json();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const values = await res.json();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             values.forEach((element: PowerMeterValues, idx: number) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-member-access
                 values[idx].enabled = values[idx].enabled ? true : false;
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return values;
         },
     });
@@ -177,14 +179,16 @@ export default function Powermeter() {
     /**
      * Power meter count query
      */
-    const { data: count, isLoading: isCountLoading } = useQuery<number>({
+    const { data: powermeterCount, isLoading: isCountLoading } = useQuery<number>({
         queryKey: ["power_metercount", lazyState],
         queryFn: async () => {
             const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
             const res = await fetch(
-                `/api/admin/crud/power_meter/count?filter=${filters}`
+                `/api/admin/crud/power_meter/count?filter=${filters}`,
             );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const { count } = await res.json();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return count;
         },
     });
@@ -220,7 +224,7 @@ export default function Powermeter() {
         };
 
         if (editedRow && editedRow.id) {
-            fetch("/api/admin/crud/power_meter/" + editedRow.id, {
+            fetch("/api/admin/crud/power_meter/" + String(editedRow.id), {
                 method: "PUT",
                 credentials: "include",
                 headers: {
@@ -232,14 +236,15 @@ export default function Powermeter() {
                 .then((response) => {
                     return response.json();
                 })
-                .then((data) => {
+                .then(async (result) => {
                     setLoading(false);
-                    updatePage();
+                    await updatePage();
                     setVisible(false);
-                    show("success", `Updated powermeter: ${JSON.stringify(data)}`);
+                    show("success", `Updated powermeter: ${JSON.stringify(result)}`);
                 })
                 .catch((err) => {
-                    show("error", err)
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    show("error", err);
                 });
             setLoading(false);
         } else {
@@ -259,11 +264,11 @@ export default function Powermeter() {
                         throw new Error("Please check is the powermeter-api runing.");
                     }
                 })
-                .then((data) => {
+                .then(async (result) => {
                     setLoading(false);
                     setVisible(false);
-                    show("success", `Saved powermeter: ${JSON.stringify(data)}`);
-                    updatePage();
+                    show("success", `Saved powermeter: ${JSON.stringify(result)}`);
+                    await updatePage();
                 })
                 .catch((err: Error) => {
                     setLoading(false);
@@ -280,11 +285,11 @@ export default function Powermeter() {
      */
     const show = useCallback((
         severity: "success" | "info" | "warn" | "error" | undefined,
-        message: string
+        message: string,
     ) => {
         if (toast.current !== null) {
             toast.current.show({
-                severity: severity,
+                severity,
                 summary: "Form submit",
                 detail: message,
             });
@@ -316,12 +321,12 @@ export default function Powermeter() {
      */
     const deleteSelectedRow = useCallback(() => {
         if (selectedRow) {
-            fetch("/api/admin/crud/power_meter/" + selectedRow.id, {
+            fetch("/api/admin/crud/power_meter/" + String(selectedRow.id), {
                 method: "DELETE",
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
-                    Accept: "application/json",
+                    "Accept": "application/json",
                 },
                 cache: "no-cache",
                 body: JSON.stringify({ action: "delete" }),
@@ -329,10 +334,11 @@ export default function Powermeter() {
                 .then((response) => {
                     return response.json();
                 })
-                .then((data) => {
+                .then(async (data) => {
                     show("success", `Deleted power_meter: ${JSON.stringify(data)}`);
-                    updatePage();
+                    await updatePage();
                 })
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 .catch((err) => show("error", err));
         }
     }, [selectedRow]);
@@ -341,11 +347,11 @@ export default function Powermeter() {
      * React hook form submition error handler
      * @param errors errors
      */
-    const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
-        //console.log(errors);
+    const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
+        //console.log(_fieldErrors);
         show(
             "error",
-            "Please fill form as needed. Read tooltips on red marked fields."
+            "Please fill form as needed. Read tooltips on red marked fields.",
         );
     }, []);
 
@@ -387,6 +393,7 @@ export default function Powermeter() {
     const formComponent = (): ReactNode => {
         return (
             <form
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 onSubmit={handleSubmit(onSubmit, onSubmitError)}
                 style={{ width: "100%" }}
             >
@@ -500,7 +507,7 @@ export default function Powermeter() {
                                         className={classNames({
                                             "p-invalid": fieldState.invalid,
                                         })}
-                                        onChange={(event) => field.onChange(event.target.value)}
+                                        onChange={(event: DropdownChangeEvent) => field.onChange(String(event.target.value))}
                                         options={timeZonesList}
                                         placeholder="Select TimeZone"
                                         style={{ width: "100%" }}
@@ -576,6 +583,7 @@ export default function Powermeter() {
             />
             <div className="card">
                 <DataTable
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     value={power_meterValues}
                     ref={dt}
                     header={header}
@@ -586,7 +594,7 @@ export default function Powermeter() {
                     paginator={true}
                     lazy={true}
                     rows={100}
-                    totalRecords={count ?? 0}
+                    totalRecords={powermeterCount ?? 0}
                     onPage={onPage}
                     loading={isDataLoading || isCountLoading}
                     onFilter={onFilter}
@@ -617,7 +625,7 @@ export default function Powermeter() {
                     icon="pi pi-check"
                     onClick={() => {
                         setEditedRow(selectedRow);
-                        control._formValues["time_zone"] = defaultTimeZone;
+                        control._formValues.time_zone = defaultTimeZone;
                         setVisible(true);
                     }}
                     disabled={selectedRow && selectedRow.id ? false : true}

@@ -46,7 +46,6 @@ const Simple = () => {
         multiplier: z.number().nullable(),
     });
 
-
     /**
      * Toaster reference
      */
@@ -74,11 +73,11 @@ const Simple = () => {
      */
     const show = (
         severity: "success" | "info" | "warn" | "error" | undefined,
-        message: string
+        message: string,
     ) => {
         if (toast.current !== null) {
             toast.current.show({
-                severity: severity,
+                severity,
                 summary: "Form submit",
                 detail: message,
             });
@@ -90,17 +89,17 @@ const Simple = () => {
      */
     useEffect(() => {
         setValue("multiplier", null);
-    }, [setValue])
+    }, [setValue]);
 
     /**
      * Form submit error handler
      * @param errors submit errors
      */
-    const onSubmitError = useCallback((errors: FieldErrors<FormValues>) => {
-        //console.log(errors);
+    const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
+        //console.log(_fieldErrors);
         show(
             "error",
-            "Please fill form as needed. Read tooltips on red marked fields."
+            "Please fill form as needed. Read tooltips on red marked fields.",
         );
     }, []);
 
@@ -116,20 +115,21 @@ const Simple = () => {
         setMeasurements([]);
         setIsLoading(true);
         let path = `/api/measurements/report?fromdate=${dayjs(
-            params.fromDate
-        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, 'day').format(
-            "YYYY-MM-DD"
-        )}&ip=${params.ipAddress}&details=${params.details}&multiplier=${params.multiplier}`;
+            params.fromDate,
+        ).format("YYYY-MM-DD")}&todate=${dayjs(params.toDate).add(1, "day").format(
+            "YYYY-MM-DD",
+        )}&ip=${String(params.ipAddress)}&details=${String(params.details)}&multiplier=${String(params.multiplier)}`;
         if (params.channel > 0) {
             path += `&channel=${params.channel}`;
         }
         const res = await fetch(path);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         values = await res.json();
         if (Array.isArray(values) && values.length > 0) {
             if (channels) {
                 values.forEach((records: RecElement) => {
-                    let channel_names = channels.filter(
-                        (ch) => ch.channel === records.channel
+                    const channel_names = channels.filter(
+                        (ch) => ch.channel === records.channel,
                     );
                     if (channel_names.length > 0) {
                         records.channel_name = channel_names[0].channel_name;
@@ -138,10 +138,13 @@ const Simple = () => {
             }
         }
         setIsLoading(false);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (values.err) {
-            show("error", values.err);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            show("error", String(values.err));
             values = [];
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setMeasurements(values);
     }, [channels, dt]);
 
@@ -149,7 +152,7 @@ const Simple = () => {
      * Form submit handler
      * @param data the form input values
      */
-    const onSubmit = useCallback((data: FormValues) => {
+    const onSubmit = useCallback(async (data: FormValues) => {
         const yearDiff = (dayjs(data.toDate).get("year") !== dayjs(data.fromDate).get("year"));
         if (
             dayjs(data.fromDate).get("year") < dayjs().get("year") &&
@@ -157,20 +160,20 @@ const Simple = () => {
         ) {
             show(
                 "error",
-                "Details must be monthly when required year less then current year."
+                "Details must be monthly when required year less then current year.",
             );
         } else if (yearDiff) {
             show(
                 "error",
-                "'From date' and 'To date' must be in same year."
+                "'From date' and 'To date' must be in same year.",
             );
         } else if (dayjs(data.toDate).isBefore(data.fromDate)) {
             show(
                 "error",
-                "To date must be greater then from date."
+                "To date must be greater then from date.",
             );
         } else {
-            updateTable(data);
+            await updateTable(data);
         }
     }, [updateTable]);
 
@@ -209,9 +212,10 @@ const Simple = () => {
      * @returns powermeters array
      */
     const fetchPower_meterValues = useCallback(async () => {
-        let response = await fetch("/api/admin/crud/power_meter");
+        const response = await fetch("/api/admin/crud/power_meter");
         let data: [] = [];
         if (response.ok) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             data = await response.json();
         }
         return data;
@@ -230,11 +234,13 @@ const Simple = () => {
      * @param power_meter_id chanels of powermeter
      */
     const fetchChannels = useCallback(async (power_meter_id: number) => {
-        let filter = encodeURIComponent(
-            JSON.stringify({ power_meter_id: power_meter_id })
+        const filter = encodeURIComponent(
+            JSON.stringify({ power_meter_id }),
         );
-        let result = await fetch("/api/admin/crud/channels?filter=" + filter);
-        let data = await result.json();
+        const result = await fetch("/api/admin/crud/channels?filter=" + filter);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const data = await result.json();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setChannels(data);
     }, []);
 
@@ -243,6 +249,7 @@ const Simple = () => {
     const formComponent = (): ReactNode => {
         return (
             <form
+                // eslint-disable-next-line  @typescript-eslint/no-misused-promises
                 onSubmit={handleSubmit(onSubmit, onSubmitError)}
                 className="flex flex-column w-full gap-4 h-fit sticky "
                 style={{ top: "80px" }}
@@ -304,17 +311,18 @@ const Simple = () => {
                                 className={classNames({
                                     "p-invalid": fieldState.invalid,
                                 })}
-                                onChange={(event) => {
+                                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                                onChange={async (event) => {
                                     if (power_meterValues) {
-                                        let powermeter: PowerMeterValues[] = power_meterValues.filter(
+                                        const powermeter: PowerMeterValues[] = power_meterValues.filter(
                                             (item: PowerMeterValues) => {
                                                 return item.ip_address === event.target.value;
-                                            }
+                                            },
                                         );
                                         if (Array.isArray(powermeter) && powermeter.length > 0 && powermeter[0].id) {
-                                            fetchChannels(powermeter[0].id);
+                                            await fetchChannels(powermeter[0].id);
                                         }
-                                        field.onChange(event.target.value);
+                                        field.onChange(String(event.target.value));
                                     }
                                 }}
                                 options={power_meterValues}
@@ -338,7 +346,7 @@ const Simple = () => {
                                 className={classNames({
                                     "p-invalid": fieldState.invalid,
                                 })}
-                                onChange={(event) => field.onChange(event.target.value)}
+                                onChange={(event) => field.onChange(Number(event.target.value))}
                                 options={[{ channel_name: "All", channel: -1 }, ...channels]}
                                 optionLabel="channel_name"
                                 optionValue="channel"
@@ -360,7 +368,7 @@ const Simple = () => {
                                 className={classNames({
                                     "p-invalid": fieldState.invalid,
                                 })}
-                                onChange={(event) => field.onChange(event.target.value)}
+                                onChange={(event) => field.onChange(String(event.target.value))}
                                 options={details}
                                 placeholder="Select details"
                             />
@@ -381,7 +389,7 @@ const Simple = () => {
                                 tooltip={errors.fromDate?.message}
                                 onValueChange={(event) =>
                                     field.onChange(event.target.value as number)}
-                                style={{ width: '100%' }}
+                                style={{ width: "100%" }}
                                 placeholder="Multiplier" />
                         </>
                     )}
@@ -391,7 +399,7 @@ const Simple = () => {
                     <Button label="Send" icon="pi pi-check" type="submit" />
                 </span>
             </form>
-        )
+        );
     };
 
     return (

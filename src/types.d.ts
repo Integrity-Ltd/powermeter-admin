@@ -15,7 +15,6 @@ interface StatisticsFormValues {
     details: string;
 }
 
-
 interface PowerMeterValues {
     id?: number;
     power_meter_name: string;
@@ -44,6 +43,7 @@ interface ChannelValues {
     channel: number;
     channel_name: string;
     enabled: boolean;
+    power_meter_name?: string;
 }
 
 interface RecElement {

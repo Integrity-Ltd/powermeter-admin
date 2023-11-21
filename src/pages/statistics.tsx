@@ -8,7 +8,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import { classNames } from "primereact/utils";
 import { ReactNode, useCallback, useRef, useState } from "react";
-import { Fieldset } from 'primereact/fieldset';
+import { Fieldset } from "primereact/fieldset";
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -42,7 +42,6 @@ const Statistics = () => {
     const {
         control,
         handleSubmit,
-        setValue,
         formState: { errors },
     } = useForm<StatisticsFormValues>({ resolver: zodResolver(schema) });
 
@@ -77,7 +76,6 @@ const Statistics = () => {
         queryFn: fetchAssetNameValues,
     });
 
-
     const header = (
         <>
             <div className="grid cols-2 justify-content-end w-ull">
@@ -104,11 +102,11 @@ const Statistics = () => {
    */
     const show = (
         severity: "success" | "info" | "warn" | "error" | undefined,
-        message: string
+        message: string,
     ) => {
         if (toast.current !== null) {
             toast.current.show({
-                severity: severity,
+                severity,
                 summary: "Form submit",
                 detail: message,
             });
@@ -119,11 +117,12 @@ const Statistics = () => {
     * Form submit error handler
     * @param errors submit errors
     */
-    const onSubmitError = useCallback((fieldErrors: FieldErrors<FormValues>) => {
-        //console.log(errors);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
+        //console.log(_fieldErrors);
         show(
             "error",
-            "Please fill form as needed. Read tooltips on red marked fields."
+            "Please fill form as needed. Read tooltips on red marked fields.",
         );
     }, []);
 
@@ -159,7 +158,7 @@ const Statistics = () => {
             setMeasurements(result);
         }
         setIsLoading(false);
-    }, [])
+    }, []);
 
     const formComponent = (): ReactNode => {
         return (
@@ -229,7 +228,7 @@ const Statistics = () => {
                     <Button label="Send" icon="pi pi-check" type="submit" />
                 </span>
             </form>
-        )
+        );
     };
 
     return (
@@ -274,7 +273,7 @@ const Statistics = () => {
                     : <></>}
             </div>
         </div>
-    )
+    );
 };
 
 export default Statistics;
