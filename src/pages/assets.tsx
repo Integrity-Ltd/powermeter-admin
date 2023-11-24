@@ -123,9 +123,9 @@ export default function Assets() {
  * Reload DataTable and count
  */
 	const updatePage = useCallback(async () => {
+		await queryClient.invalidateQueries({ queryKey: ["assetnames"] });
 		await queryClient.invalidateQueries({ queryKey: ["assets"] });
 		await queryClient.invalidateQueries({ queryKey: ["assetscount"] });
-		await queryClient.invalidateQueries({ queryKey: ["assetnames"] });
 		setSelectedRow(null);
 		setEditedRow(getDefaultAssetsValues());
 	}, [queryClient, getDefaultAssetsValues]);
@@ -350,6 +350,7 @@ export default function Assets() {
 		if (editedRow && editedRow.id) {
 			fetchChannels(editedRow.power_meter_id).then(() => {
 				setValue("asset_name_id", editedRow.asset_name_id);
+				setAssetName({ id: editedRow.asset_name_id, name: editedRow.asset_name as string });
 				setValue("asset_name", editedRow.asset_name);
 				setValue("power_meter_id", editedRow.power_meter_id);
 				setValue("channel_id", editedRow.channel_id);
@@ -485,10 +486,10 @@ export default function Assets() {
 										completeMethod={completeMethod}
 										onChange={(e) => {
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-											const assetIdByName: AssetNameValues = assetNames.find((item: AssetNameValues) => item.name === e.value);
+											const assetNameIdByName: AssetNameValues = assetNames.find((item: AssetNameValues) => item.name === e.value);
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-											setValue("asset_name_id", Number(assetIdByName?.id) || -1);
-											setAssetName(assetIdByName);
+											setValue("asset_name_id", Number(assetNameIdByName?.id) || -1);
+											setAssetName(assetNameIdByName);
 											field.onChange(String(e.value));
 										}}
 										dropdown
