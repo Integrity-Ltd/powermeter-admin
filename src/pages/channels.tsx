@@ -21,7 +21,7 @@ import * as z from "zod";
 import { classNames } from "primereact/utils";
 import { convertToCSV, downloadCsvFile } from "../utils/Converter";
 import { useGetChannels } from "./channelsApi";
-import { show } from "../utils/Message";
+import { show } from "../pages/Message";
 
 /**
  * The input form objects
