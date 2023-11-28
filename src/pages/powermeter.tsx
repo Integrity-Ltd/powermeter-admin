@@ -89,7 +89,7 @@ export default function Powermeter() {
 		filters: {},
 	});
 
-	const getDefaultPowerMeterValues = (): PowerMeterValues => {
+	const getDefaultPowerMeterValues = (): PowerMeterValue => {
 		return {
 			power_meter_name: "",
 			ip_address: "",
@@ -101,13 +101,13 @@ export default function Powermeter() {
 	/**
 	 * The edited row of power meter
 	 */
-	const [editedRow, setEditedRow] = useState<PowerMeterValues | null>(
+	const [editedRow, setEditedRow] = useState<PowerMeterValue | null>(
 		getDefaultPowerMeterValues(),
 	);
 	/**
 	 * The selected row of power meter
 	 */
-	const [selectedRow, setSelectedRow] = useState<PowerMeterValues | null>(null);
+	const [selectedRow, setSelectedRow] = useState<PowerMeterValue | null>(null);
 	/**
 	 * Visibility of form editor dialog
 	 */
@@ -140,7 +140,7 @@ export default function Powermeter() {
 	 */
 	const onSelectionChange = useCallback(
 		(e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
-			setSelectedRow(e.value as PowerMeterValues);
+			setSelectedRow(e.value as PowerMeterValue);
 		}, []);
 
 	/**
@@ -167,7 +167,7 @@ export default function Powermeter() {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			const values = await res.json();
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-			values.forEach((_element: PowerMeterValues, idx: number) => {
+			values.forEach((_element: PowerMeterValue, idx: number) => {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-member-access
 				values[idx].enabled = values[idx].enabled ? true : false;
 			});

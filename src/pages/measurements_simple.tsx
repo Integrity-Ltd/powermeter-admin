@@ -64,7 +64,7 @@ const Simple = () => {
 		handleSubmit,
 		setValue,
 		formState: { errors },
-	} = useForm<FormValues>({ resolver: zodResolver(schema) });
+	} = useForm<FormValue>({ resolver: zodResolver(schema) });
 
 	/**
 	 * Show message
@@ -95,7 +95,7 @@ const Simple = () => {
 	 * Form submit error handler
 	 * @param errors submit errors
 	 */
-	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
+	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValue>) => {
 		//console.log(_fieldErrors);
 		show(
 			"error",
@@ -107,7 +107,7 @@ const Simple = () => {
 	* Get all measurements
 	* @param params parameters of measurements report
 	*/
-	const updateTable = useCallback(async (params: FormValues) => {
+	const updateTable = useCallback(async (params: FormValue) => {
 		let values = [];
 		if (dt && dt.current) {
 			dt.current.reset();
@@ -152,7 +152,7 @@ const Simple = () => {
 	 * Form submit handler
 	 * @param data the form input values
 	 */
-	const onSubmit = useCallback(async (data: FormValues) => {
+	const onSubmit = useCallback(async (data: FormValue) => {
 		const yearDiff = (dayjs(data.toDate).get("year") !== dayjs(data.fromDate).get("year"));
 		if (
 			dayjs(data.fromDate).get("year") < dayjs().get("year") &&
@@ -314,8 +314,8 @@ const Simple = () => {
 								// eslint-disable-next-line @typescript-eslint/no-misused-promises
 								onChange={async (event) => {
 									if (power_meterValues) {
-										const powermeter: PowerMeterValues[] = power_meterValues.filter(
-											(item: PowerMeterValues) => {
+										const powermeter: PowerMeterValue[] = power_meterValues.filter(
+											(item: PowerMeterValue) => {
 												return item.ip_address === event.target.value;
 											},
 										);

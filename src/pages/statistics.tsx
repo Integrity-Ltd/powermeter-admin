@@ -43,7 +43,7 @@ const Statistics = () => {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<StatisticsFormValues>({ resolver: zodResolver(schema) });
+	} = useForm<StatisticsFormValue>({ resolver: zodResolver(schema) });
 
 	/**
    * DataTable reference
@@ -63,7 +63,7 @@ const Statistics = () => {
 
 	const fetchAssetNameValues = useCallback(async () => {
 		const response = await fetch("/api/admin/crud/assets/asset_names");
-		let data: AssetNameValues[] = [];
+		let data: AssetNameValue[] = [];
 		if (response.ok) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			data = await response.json();
@@ -118,7 +118,7 @@ const Statistics = () => {
 	* @param errors submit errors
 	*/
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
+	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValue>) => {
 		//console.log(_fieldErrors);
 		show(
 			"error",
@@ -137,7 +137,7 @@ const Statistics = () => {
 	 * Form submit handler
 	 * @param data the form input values
 	 */
-	const onSubmit = useCallback(async (data: StatisticsFormValues) => {
+	const onSubmit = useCallback(async (data: StatisticsFormValue) => {
 		setIsLoading(true);
 		const query = "/api/measurements/statistics?asset_name_id=" + String(data.assetNameId) + "&details=" + String(data.details);
 		const response = await fetch(query);

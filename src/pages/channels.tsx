@@ -258,7 +258,7 @@ const Channels = () => {
  * Power meter values state hook
  */
 	const [power_meterValues, setPower_meterValues] = useState<
-		PowerMeterValues[]
+		PowerMeterValue[]
 	>([]);
 	/**
  * Power meter values fetch
@@ -268,7 +268,7 @@ const Channels = () => {
 		try {
 			const response = await fetch("/api/admin/crud/power_meter");
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const data: PowerMeterValues[] = await response.json();
+			const data: PowerMeterValue[] = await response.json();
 			setPower_meterValues(data);
 			// eslint-disable-next-line
 		} catch (e: any) {

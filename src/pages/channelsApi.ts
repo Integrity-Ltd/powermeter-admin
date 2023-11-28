@@ -25,7 +25,7 @@ export const useGetChannels = (toast: RefObject<Toast>, lazyState: DataTableStat
 		values.forEach((element: ChannelValue, idx: number) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 			const result = powerMetersValues.filter(
-				(powerMeter: PowerMeterValues) => {
+				(powerMeter: PowerMeterValue) => {
 					return powerMeter.id === element.power_meter_id;
 				},
 			);

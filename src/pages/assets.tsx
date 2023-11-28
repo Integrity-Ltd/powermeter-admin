@@ -64,7 +64,7 @@ export default function Assets() {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [assetNamesState, setAssetNamesState] = useState({});
 
-	const getDefaultAssetsValues = useCallback((): AssetsValues => {
+	const getDefaultAssetsValues = useCallback((): AssetsValue => {
 		return {
 			asset_name_id: 0,
 			power_meter_id: 0,
@@ -74,13 +74,13 @@ export default function Assets() {
 	/**
  * The edited row of assets
  */
-	const [editedRow, setEditedRow] = useState<AssetsValues | null>(
+	const [editedRow, setEditedRow] = useState<AssetsValue | null>(
 		getDefaultAssetsValues(),
 	);
 	/**
  * The selected row of assets
  */
-	const [selectedRow, setSelectedRow] = useState<AssetsValues | null>(null);
+	const [selectedRow, setSelectedRow] = useState<AssetsValue | null>(null);
 	/**
  * Visibility of form editor dialog
  */
@@ -114,7 +114,7 @@ export default function Assets() {
  */
 	const onSelectionChange = useCallback(
 		(e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
-			setSelectedRow(e.value as AssetsValues);
+			setSelectedRow(e.value as AssetsValue);
 		},
 		[],
 	);
@@ -144,7 +144,7 @@ export default function Assets() {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			const values = await res.json();
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-			values.forEach((_element: PowerMeterValues, idx: number) => {
+			values.forEach((_element: PowerMeterValue, idx: number) => {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 				values[idx].enabled = values[idx].enabled ? true : false;
 			});

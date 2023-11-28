@@ -1,7 +1,7 @@
 /**
  * The input form objects
  */
-interface FormValues {
+interface FormValue {
 	fromDate: string;
 	toDate: string;
 	ipAddress: string;
@@ -10,12 +10,12 @@ interface FormValues {
 	multiplier: number | null;
 }
 
-interface StatisticsFormValues {
+interface StatisticsFormValue {
 	assetNameId: number;
 	details: string;
 }
 
-interface PowerMeterValues {
+interface PowerMeterValue {
 	id?: number;
 	power_meter_name: string;
 	ip_address: string;
@@ -24,12 +24,12 @@ interface PowerMeterValues {
 	enabled: boolean;
 }
 
-interface AssetNameValues {
+interface AssetNameValue {
 	id?: number;
 	name: string;
 }
 
-interface AssetsValues {
+interface AssetsValue {
 	id?: number;
 	asset_name_id: number;
 	asset_name?: string;
