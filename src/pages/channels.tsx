@@ -140,7 +140,7 @@ const Channels = () => {
 	/**
  * Channel count query with RestAPI call
  */
-	const { data: channelsCount, isLoading: isCountLoading } = useQuery<number>({
+	const { data: channelsCount, isLoading: isCountLoading } = useQuery<number, Error>({
 		queryKey: ["channelscount", lazyState],
 		queryFn: async (): Promise<number> => {
 			try {
@@ -217,8 +217,7 @@ const Channels = () => {
 					.catch((err: Error) => {
 						show(toast, "error", err.message);
 					});
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			} catch (e: any) {
+			} catch (e: unknown) {
 				show(toast, "error", "Please check is the powermeter-api runing.");
 			}
 		} else {
@@ -342,8 +341,7 @@ const Channels = () => {
 		//dt.current.exportCSV({ selectionOnly });
 		try {
 			const result = await fetch("/api/admin/crud/channels");
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const data = await result.json();
+			const data: ChannelValue[] = await result.json() as ChannelValue[];
 			const csv = convertToCSV(data);
 			downloadCsvFile(csv, "download.csv");
 			// eslint-disable-next-line
