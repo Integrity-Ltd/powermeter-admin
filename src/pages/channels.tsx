@@ -142,7 +142,7 @@ const Channels = () => {
  */
 	const { data: channelsCount, isLoading: isCountLoading } = useQuery<number>({
 		queryKey: ["channelscount", lazyState],
-		queryFn: async () => {
+		queryFn: async (): Promise<number> => {
 			try {
 				const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
 				const res = await fetch(
@@ -155,6 +155,7 @@ const Channels = () => {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
 				show(toast, "error", "Please check is the powermeter-api runing.");
+				return 0;
 			}
 		},
 	});
@@ -213,9 +214,8 @@ const Channels = () => {
 						setVisible(false);
 						show(toast, "success", `Updated channel: ${JSON.stringify(result)}`);
 					})
-					.catch((err) => {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-						show(toast, "error", String(err.message));
+					.catch((err: Error) => {
+						show(toast, "error", err.message);
 					});
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
@@ -293,9 +293,8 @@ const Channels = () => {
 				setValue("channel_name", "");
 				setValue("enabled", false);
 			}
-		}).catch((err) => {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			show(toast, "error", String(err.message));
+		}).catch((err: Error) => {
+			show(toast, "error", err.message);
 		});
 	}, [editedRow, setValue, fetchPower_meterValues]);
 
@@ -322,8 +321,7 @@ const Channels = () => {
 						show(toast, "success", `Deleted channels: ${JSON.stringify(data)}`);
 						await updatePage();
 					})
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					.catch((err) => show(toast, "error", String(err.message)));
+					.catch((err: Error) => show(toast, "error", err.message));
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
 				show(toast, "error", "Please check is the powermeter-api runing.");
