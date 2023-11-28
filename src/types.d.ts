@@ -37,7 +37,7 @@ interface AssetsValues {
 	channel_id: number;
 }
 
-interface ChannelValues {
+interface ChannelValue {
 	id?: number;
 	power_meter_id: number;
 	channel: number;

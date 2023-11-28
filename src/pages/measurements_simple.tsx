@@ -32,7 +32,7 @@ const Simple = () => {
 	/**
 	 * The channels of selected powermeter
 	 */
-	const [channels, setChannels] = useState<ChannelValues[]>([]);
+	const [channels, setChannels] = useState<ChannelValue[]>([]);
 
 	/**
 	 * Zod validator of form input values

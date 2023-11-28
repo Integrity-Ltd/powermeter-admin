@@ -64,7 +64,7 @@ const Channels = () => {
 		filters: {},
 	});
 
-	const getDefaultChannelValue = (): ChannelValues => {
+	const getDefaultChannelValue = (): ChannelValue => {
 		return {
 			power_meter_id: -1,
 			channel: 1,
@@ -81,13 +81,13 @@ const Channels = () => {
 	/**
  * The edited row of channel
  */
-	const [editedRow, setEditedRow] = useState<ChannelValues | null>(
+	const [editedRow, setEditedRow] = useState<ChannelValue | undefined>(
 		getDefaultChannelValue(),
 	);
 	/**
  * The selected row of channel
  */
-	const [selectedRow, setSelectedRow] = useState<ChannelValues | null>(null);
+	const [selectedRow, setSelectedRow] = useState<ChannelValue | undefined>(undefined);
 	/**
  * Visibility of form editor dialog
  */
@@ -117,7 +117,7 @@ const Channels = () => {
  */
 	const onSelectionChange = useCallback(
 		(e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
-			setSelectedRow(e.value as ChannelValues);
+			setSelectedRow(e.value as ChannelValue);
 		},
 		[],
 	);
@@ -128,7 +128,7 @@ const Channels = () => {
 	const updatePage = useCallback(async () => {
 		await queryClient.invalidateQueries({ queryKey: ["channels"] });
 		await queryClient.invalidateQueries({ queryKey: ["channelscount"] });
-		setSelectedRow(null);
+		setSelectedRow(undefined);
 		setEditedRow(getDefaultChannelValue());
 	}, [queryClient]);
 	/**
@@ -553,7 +553,7 @@ const Channels = () => {
 					label="New"
 					icon="pi pi-check"
 					onClick={() => {
-						setSelectedRow(null);
+						setSelectedRow(undefined);
 						setEditedRow(getDefaultChannelValue());
 						setVisible(true);
 					}}

@@ -201,7 +201,7 @@ export default function Assets() {
 		},
 	});
 
-	const [channels, setChannels] = useState<ChannelValues[]>([]);
+	const [channels, setChannels] = useState<ChannelValue[]>([]);
 
 	const fetchChannels = useCallback(async (power_meter_id: number) => {
 		const filter = encodeURIComponent(
@@ -209,7 +209,7 @@ export default function Assets() {
 		);
 		const result = await fetch("/api/admin/crud/channels?filter=" + filter);
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const data: ChannelValues[] = await result.json();
+		const data: ChannelValue[] = await result.json();
 		setChannels(data);
 	}, []);
 
