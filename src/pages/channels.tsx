@@ -20,6 +20,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { classNames } from "primereact/utils";
 import { convertToCSV, downloadCsvFile } from "../utils/Converter";
+import { useGetChannels } from "./channelsApi";
+import { show } from "../utils/Message";
 
 /**
  * The input form objects
@@ -70,6 +72,12 @@ const Channels = () => {
 			enabled: false,
 		};
 	};
+
+	/**
+ * Toast reference
+ */
+	const toast = useRef<Toast>(null);
+
 	/**
  * The edited row of channel
  */
@@ -127,46 +135,7 @@ const Channels = () => {
  * Channels query with RestAPI call
  */
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-	const { data: channelsValues, isLoading: isDataLoading } = useQuery({
-		queryKey: ["channels", lazyState],
-		queryFn: async () => {
-			try {
-				const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
-
-				const res = await fetch(
-					`/api/admin/crud/channels?first=${lazyState.first}&rowcount=${lazyState.rows}&filter=${filters}`,
-				);
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const values = await res.json();
-
-				const resPowerMeters = await fetch(`/api/admin/crud/power_meter`);
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const powerMetersValues = await resPowerMeters.json();
-
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-				values.forEach((element: ChannelValues, idx: number) => {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-					const result = powerMetersValues.filter(
-						(powerMeter: PowerMeterValues) => {
-							return powerMeter.id === element.power_meter_id;
-						},
-					);
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					if (result.length > 0) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-						values[idx].power_meter_name = result[0].power_meter_name;
-					}
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					values[idx].enabled = values[idx].enabled ? true : false;
-				});
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return values;
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			} catch (e: any) {
-				show("error", "Please check is the powermeter-api runing.");
-			}
-		},
-	});
+	const { data: channelsValues, isLoading: isDataLoading } = useGetChannels(toast, lazyState);
 
 	/**
  * Channel count query with RestAPI call
@@ -185,15 +154,10 @@ const Channels = () => {
 				return count;
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
-				show("error", "Please check is the powermeter-api runing.");
+				show(toast, "error", "Please check is the powermeter-api runing.");
 			}
 		},
 	});
-
-	/**
- * Toast reference
- */
-	const toast = useRef<Toast>(null);
 
 	/**
  * React hook form
@@ -212,7 +176,7 @@ const Channels = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
 		//console.log(_fieldErrors);
-		show(
+		show(toast,
 			"error",
 			"Please fill form as needed. Read tooltips on red marked fields.",
 		);
@@ -247,15 +211,15 @@ const Channels = () => {
 					.then(async (result) => {
 						await updatePage();
 						setVisible(false);
-						show("success", `Updated channel: ${JSON.stringify(result)}`);
+						show(toast, "success", `Updated channel: ${JSON.stringify(result)}`);
 					})
 					.catch((err) => {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-						show("error", String(err.message));
+						show(toast, "error", String(err.message));
 					});
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
-				show("error", "Please check is the powermeter-api runing.");
+				show(toast, "error", "Please check is the powermeter-api runing.");
 			}
 		} else {
 			try {
@@ -278,35 +242,17 @@ const Channels = () => {
 					.then(async (result) => {
 						await updatePage();
 						setVisible(false);
-						show("success", `Saved channel: ${JSON.stringify(result)}`);
+						show(toast, "success", `Saved channel: ${JSON.stringify(result)}`);
 					})
 					.catch((err: Error) => {
-						show("error", err.message);
+						show(toast, "error", err.message);
 						setVisible(false);
 					});
 			} catch (e) {
-				show("error", "Please check is the powermeter-api runing.");
+				show(toast, "error", "Please check is the powermeter-api runing.");
 			}
 		}
 	}, [editedRow, updatePage]);
-
-	/**
- * Show message
- * @param severity severity of message
- * @param message message to display
- */
-	const show = (
-		severity: "success" | "info" | "warn" | "error" | undefined,
-		message: string,
-	) => {
-		if (toast.current !== null) {
-			toast.current.show({
-				severity,
-				summary: "Form submit",
-				detail: message,
-			});
-		}
-	};
 
 	/**
  * Power meter values state hook
@@ -326,7 +272,7 @@ const Channels = () => {
 			setPower_meterValues(data);
 			// eslint-disable-next-line
 		} catch (e: any) {
-			show("error", "Please check is the powermeter-api runing.");
+			show(toast, "error", "Please check is the powermeter-api runing.");
 		}
 	}, []);
 
@@ -349,7 +295,7 @@ const Channels = () => {
 			}
 		}).catch((err) => {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			show("error", String(err.message));
+			show(toast, "error", String(err.message));
 		});
 	}, [editedRow, setValue, fetchPower_meterValues]);
 
@@ -373,14 +319,14 @@ const Channels = () => {
 						return response.json();
 					})
 					.then(async (data) => {
-						show("success", `Deleted channels: ${JSON.stringify(data)}`);
+						show(toast, "success", `Deleted channels: ${JSON.stringify(data)}`);
 						await updatePage();
 					})
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					.catch((err) => show("error", String(err.message)));
+					.catch((err) => show(toast, "error", String(err.message)));
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} catch (e: any) {
-				show("error", "Please check is the powermeter-api runing.");
+				show(toast, "error", "Please check is the powermeter-api runing.");
 			}
 		}
 	}, [selectedRow]);
@@ -404,7 +350,7 @@ const Channels = () => {
 			downloadCsvFile(csv, "download.csv");
 			// eslint-disable-next-line
 		} catch (e: any) {
-			show("error", "Please check is the powermeter-api runing.");
+			show(toast, "error", "Please check is the powermeter-api runing.");
 		}
 	}, []);
 
