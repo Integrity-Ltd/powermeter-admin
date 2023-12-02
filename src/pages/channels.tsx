@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	DataTable,
 	DataTableStateEvent,
@@ -8,7 +8,7 @@ import {
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
-import { useForm, Controller, FieldErrors } from "react-hook-form";
+import { useForm, Controller, FieldErrors, set } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Checkbox } from "primereact/checkbox";
@@ -20,18 +20,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { classNames } from "primereact/utils";
 import { convertToCSV, downloadCsvFile } from "../utils/Converter";
-import { useGetChannels } from "./channelsApi";
+import { FormValues, deleteCallBack as deleteCallback, setPowerMeterValuesCallback as usePowerMeterValuesCallback, submitCallBack, useGetChannels, useGetChannelsCount } from "./channelsApi";
 import { show } from "../pages/Message";
-
-/**
- * The input form objects
- */
-interface FormValues {
-	power_meter_id: number;
-	channel: number;
-	channel_name: string;
-	enabled: boolean;
-}
 
 /**
  * The Zod validation schema of form data
@@ -51,8 +41,8 @@ const schema = z.object({
 const Channels = () => {
 	const queryClient = useQueryClient();
 	/**
- * Lazy data model state
- */
+	 * Lazy data model state
+	 */
 	const [lazyState, setLazyState] = useState<DataTableStateEvent>({
 		first: 0,
 		rows: 100,
@@ -74,47 +64,49 @@ const Channels = () => {
 	};
 
 	/**
- * Toast reference
- */
+	 * Toast reference
+	 */
 	const toast = useRef<Toast>(null);
 
 	/**
- * The edited row of channel
- */
+	 * The edited row of channel
+	 */
 	const [editedRow, setEditedRow] = useState<ChannelValue | undefined>(
 		getDefaultChannelValue(),
 	);
+
 	/**
- * The selected row of channel
- */
+	 * The selected row of channel
+	 */
 	const [selectedRow, setSelectedRow] = useState<ChannelValue | undefined>(undefined);
+
 	/**
- * Visibility of form editor dialog
- */
+	 * Visibility of form editor dialog
+	 */
 	const [visible, setVisible] = useState(false);
 	/**
- * Visibility of confirm dialog
- */
+	 * Visibility of confirm dialog
+	 */
 	const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
 
 	/**
- * On page request of DataTable
- */
+	 * On page request of DataTable
+	 */
 	const onPage = useCallback((event: DataTableStateEvent) => {
 		setLazyState(event);
 	}, []);
 
 	/**
- * Filter on powermeter DataTable
- */
+	 * Filter on powermeter DataTable
+	 */
 	const onFilter = useCallback((event: DataTableStateEvent) => {
 		event.first = 0;
 		setLazyState(event);
 	}, []);
 
 	/**
- * Selection changed event callback
- */
+	 * Selection changed event callback
+	 */
 	const onSelectionChange = useCallback(
 		(e: DataTableSelectionChangeEvent<DataTableValueArray>) => {
 			setSelectedRow(e.value as ChannelValue);
@@ -123,46 +115,28 @@ const Channels = () => {
 	);
 
 	/**
- * Reload DataTable and count
- */
+	 * Reload DataTable and count
+	 */
 	const updatePage = useCallback(async () => {
 		await queryClient.invalidateQueries({ queryKey: ["channels"] });
 		await queryClient.invalidateQueries({ queryKey: ["channelscount"] });
 		setSelectedRow(undefined);
 		setEditedRow(getDefaultChannelValue());
 	}, [queryClient]);
+
 	/**
- * Channels query with RestAPI call
- */
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+	 * Channels query with RestAPI call
+	 */
 	const { data: channelsValues, isLoading: isDataLoading } = useGetChannels(toast, lazyState);
 
 	/**
- * Channel count query with RestAPI call
- */
-	const { data: channelsCount, isLoading: isCountLoading } = useQuery<number, Error>({
-		queryKey: ["channelscount", lazyState],
-		queryFn: async (): Promise<number> => {
-			try {
-				const filters = encodeURIComponent(JSON.stringify(lazyState.filters));
-				const res = await fetch(
-					`/api/admin/crud/channels/count?filter=${filters}`,
-				);
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const { count } = await res.json();
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return count;
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			} catch (e: any) {
-				show(toast, "error", "Please check is the powermeter-api runing.");
-				return 0;
-			}
-		},
-	});
+	 * Channel count query with RestAPI call
+	 */
+	const { data: channelsCount, isLoading: isCountLoading } = useGetChannelsCount(toast, lazyState);
 
 	/**
- * React hook form
- */
+	 * React hook form
+	 */
 	const {
 		control,
 		handleSubmit,
@@ -171,10 +145,16 @@ const Channels = () => {
 	} = useForm<FormValues>({ resolver: zodResolver(schema) });
 
 	/**
- * React hook form submition error handler
- * @param errors errors
- */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 * React hook form submit callback. Use for create and update RestAPI calls
+	 *
+	 * @param data submited data values
+	 */
+	const onSubmit = submitCallBack(toast, setVisible, updatePage, editedRow);
+
+	/**
+	 * React hook form submition error handler
+	 * @param errors errors
+	 */
 	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValues>) => {
 		//console.log(_fieldErrors);
 		show(toast,
@@ -184,103 +164,21 @@ const Channels = () => {
 	}, []);
 
 	/**
- * React hook form submit callback. Use for create and update RestAPI calls
- *
- * @param data submited data values
- */
-	const onSubmit = useCallback((data: FormValues) => {
-		const params = {
-			power_meter_id: data.power_meter_id,
-			channel: data.channel,
-			channel_name: data.channel_name,
-			enabled: data.enabled,
-		};
-		if (editedRow && editedRow.id) {
-			try {
-				fetch("/api/admin/crud/channels/" + String(editedRow.id), {
-					method: "PUT",
-					credentials: "include",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					cache: "no-cache",
-					body: JSON.stringify(params),
-				})
-					.then((response) => {
-						return response.json();
-					})
-					.then(async (result) => {
-						await updatePage();
-						setVisible(false);
-						show(toast, "success", `Updated channel: ${JSON.stringify(result)}`);
-					})
-					.catch((err: Error) => {
-						show(toast, "error", err.message);
-					});
-			} catch (e: unknown) {
-				show(toast, "error", "Please check is the powermeter-api runing.");
-			}
-		} else {
-			try {
-				fetch("/api/admin/crud/channels", {
-					method: "POST",
-					credentials: "include",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					cache: "no-cache",
-					body: JSON.stringify(params),
-				})
-					.then((response) => {
-						if (response.ok) {
-							return response.json();
-						} else {
-							throw new Error("Please check is the powermeter-api runing.");
-						}
-					})
-					.then(async (result) => {
-						await updatePage();
-						setVisible(false);
-						show(toast, "success", `Saved channel: ${JSON.stringify(result)}`);
-					})
-					.catch((err: Error) => {
-						show(toast, "error", err.message);
-						setVisible(false);
-					});
-			} catch (e) {
-				show(toast, "error", "Please check is the powermeter-api runing.");
-			}
-		}
-	}, [editedRow, updatePage]);
+	 * Power meter values state hook
+	 */
+	const [powerMeterValues, setPowerMeterValues] = useState<PowerMeterValue[]>([]);
 
 	/**
- * Power meter values state hook
- */
-	const [power_meterValues, setPower_meterValues] = useState<
-		PowerMeterValue[]
-	>([]);
-	/**
- * Power meter values fetch
- */
-
-	const fetchPower_meterValues = useCallback(async () => {
-		try {
-			const response = await fetch("/api/admin/crud/power_meter");
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			const data: PowerMeterValue[] = await response.json();
-			setPower_meterValues(data);
-			// eslint-disable-next-line
-		} catch (e: any) {
-			show(toast, "error", "Please check is the powermeter-api runing.");
-		}
-	}, []);
+	 * Power meter values fetch
+	 */
+	const fetchPowerMeterValues = usePowerMeterValuesCallback(toast, setPowerMeterValues);
 
 	/**
- * EditedRow useEffect
- */
+	 * EditedRow useEffect
+	 */
 	useEffect(() => {
 		//console.log(selectedRows);
-		fetchPower_meterValues().then(() => {
+		fetchPowerMeterValues().then(() => {
 			if (editedRow && editedRow.id) {
 				setValue("power_meter_id", editedRow.power_meter_id);
 				setValue("channel", editedRow.channel);
@@ -295,48 +193,21 @@ const Channels = () => {
 		}).catch((err: Error) => {
 			show(toast, "error", err.message);
 		});
-	}, [editedRow, setValue, fetchPower_meterValues]);
+	}, [editedRow, setValue, fetchPowerMeterValues]);
 
 	/**
- * Delete selected powermeter with RestAPI
- */
-	const deleteSelectedRow = useCallback(() => {
-		if (selectedRow) {
-			try {
-				fetch("/api/admin/crud/channels/" + String(selectedRow.id), {
-					method: "DELETE",
-					credentials: "include",
-					headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json",
-					},
-					cache: "no-cache",
-					body: JSON.stringify({ action: "delete" }),
-				})
-					.then((response) => {
-						return response.json();
-					})
-					.then(async (data) => {
-						show(toast, "success", `Deleted channels: ${JSON.stringify(data)}`);
-						await updatePage();
-					})
-					.catch((err: Error) => show(toast, "error", err.message));
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			} catch (e: any) {
-				show(toast, "error", "Please check is the powermeter-api runing.");
-			}
-		}
-	}, [selectedRow]);
-
+	 * Delete selected powermeter with RestAPI
+	 */
+	const deleteSelectedRow = deleteCallback(toast, updatePage, selectedRow);
 	/**
- * DataTable reference
- */
+	 * DataTable reference
+	 */
 	const dt = useRef<DataTable<DataTableValueArray>>(null);
 
 	/**
- * Export measurements data to CSV
- * @param selectionOnly export only selected data
- */
+	 * Export measurements data to CSV
+	 * @param selectionOnly export only selected data
+	 */
 	const exportCSV = useCallback(async (_selectionOnly: boolean) => {
 		//dt.current.exportCSV({ selectionOnly });
 		try {
@@ -344,8 +215,7 @@ const Channels = () => {
 			const data: ChannelValue[] = await result.json() as ChannelValue[];
 			const csv = convertToCSV(data);
 			downloadCsvFile(csv, "download.csv");
-			// eslint-disable-next-line
-		} catch (e: any) {
+		} catch (e: unknown) {
 			show(toast, "error", "Please check is the powermeter-api runing.");
 		}
 	}, []);
@@ -362,10 +232,7 @@ const Channels = () => {
 						icon="pi pi-file"
 						rounded
 						// eslint-disable-next-line @typescript-eslint/no-misused-promises
-						onClick={() => (async () => {
-							await exportCSV(false);
-						})()
-						}
+						onClick={() => exportCSV(false)}
 						data-pr-tooltip="CSV"
 					/>
 				</div>
@@ -373,7 +240,7 @@ const Channels = () => {
 		</>
 	);
 
-	const formComoonent = (
+	const formComponent = (
 		<form
 			// eslint-disable-next-line @typescript-eslint/no-misused-promises
 			onSubmit={handleSubmit(onSubmit, onSubmitError)}
@@ -398,7 +265,7 @@ const Channels = () => {
 									})}
 									value={field.value}
 									onChange={(event) => field.onChange(Number(event.target.value))}
-									options={power_meterValues}
+									options={powerMeterValues}
 									optionLabel="power_meter_name"
 									optionValue="id"
 									placeholder="Select Power meter"
@@ -505,7 +372,7 @@ const Channels = () => {
 				style={{ width: "50vw" }}
 			>
 
-				{formComoonent}
+				{formComponent}
 
 			</Dialog>
 			<ConfirmDialog
