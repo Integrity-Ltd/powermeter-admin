@@ -3,7 +3,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { DataTableStateEvent } from "primereact/datatable";
-import { show } from "./Message";
+import { show } from "../pages/Message";
 import { Dispatch, RefObject, SetStateAction, useCallback } from "react";
 import { Toast } from "primereact/toast";
 
@@ -66,7 +66,7 @@ export const useGetChannelsCount = (toast: RefObject<Toast>, lazyState: DataTabl
 	},
 });
 
-export const submitCallBack = (toast: RefObject<Toast>, setVisible: Dispatch<SetStateAction<boolean>>, updatePage: () => Promise<void>, editedRow: ChannelValue | undefined) => useCallback((data: FormValues) => {
+export const submitCallback = (toast: RefObject<Toast>, setVisible: Dispatch<SetStateAction<boolean>>, updatePage: () => Promise<void>, editedRow: ChannelValue | undefined) => useCallback((data: FormValues) => {
 	const params = {
 		power_meter_id: data.power_meter_id,
 		channel: data.channel,
@@ -131,7 +131,7 @@ export const submitCallBack = (toast: RefObject<Toast>, setVisible: Dispatch<Set
 	}
 }, [editedRow, updatePage]);
 
-export const deleteCallBack = (toast: RefObject<Toast>, updatePage: () => Promise<void>, selectedRow: ChannelValue | undefined) => useCallback(() => {
+export const deleteCallback = (toast: RefObject<Toast>, updatePage: () => Promise<void>, selectedRow: ChannelValue | undefined) => useCallback(() => {
 	if (selectedRow) {
 		try {
 			fetch("/api/admin/crud/channels/" + String(selectedRow.id), {
@@ -158,7 +158,7 @@ export const deleteCallBack = (toast: RefObject<Toast>, updatePage: () => Promis
 	}
 }, [selectedRow]);
 
-export const setPowerMeterValuesCallback = (toast: RefObject<Toast>, setPowerMeterValues: Dispatch<SetStateAction<PowerMeterValue[]>>) => useCallback(async () => {
+export const usePowerMeterValuesCallback = (toast: RefObject<Toast>, setPowerMeterValues: Dispatch<SetStateAction<PowerMeterValue[]>>) => useCallback(async () => {
 	try {
 		const response = await fetch("/api/admin/crud/power_meter");
 		const data: PowerMeterValue[] = await response.json() as PowerMeterValue[];
