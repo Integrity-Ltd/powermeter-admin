@@ -11,7 +11,7 @@ import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { convertToCSV, downloadCsvFile } from "../utils/Converter";
-import { deleteCallback, useGetChannels, useGetChannelsCount } from "../api/channelsApi";
+import { deleteChannelRowCallback, useGetChannels, useGetChannelsCount } from "../api/channelsApi";
 import { show } from "../pages/Message";
 import ChannelFormComponent from "../forms/channelForm";
 
@@ -124,7 +124,7 @@ const Channels = () => {
 	/**
 	 * Delete selected powermeter with RestAPI
 	 */
-	const deleteSelectedRow = deleteCallback(toast, updatePage, selectedRow);
+	const deleteSelectedRow = deleteChannelRowCallback(toast, updatePage, selectedRow);
 
 	/**
 	 * DataTable reference
@@ -171,7 +171,15 @@ const Channels = () => {
 		<div className="card">
 			<Toast ref={toast} />
 
-			<ChannelFormComponent toast={toast} visible={isEditDialogvisible} setVisible={setIsEditDialogVisible} updatePage={updatePage} editedRow={editedRow} powerMeterValues={powerMeterValues} setPowerMeterValues={setPowerMeterValues}></ChannelFormComponent>
+			<ChannelFormComponent
+				toast={toast}
+				visible={isEditDialogvisible}
+				setVisible={setIsEditDialogVisible}
+				updatePage={updatePage}
+				editedRow={editedRow}
+				powerMeterValues={powerMeterValues}
+				setPowerMeterValues={setPowerMeterValues}
+			/>
 
 			<ConfirmDialog
 				visible={confirmDialogVisible}

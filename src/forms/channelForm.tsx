@@ -1,6 +1,6 @@
 import { InputText } from "primereact/inputtext";
 import { classNames } from "primereact/utils";
-import { FormValues, submitCallback } from "../api/channelsApi";
+import { FormValues, channelSubmitCallback } from "../api/channelsApi";
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
@@ -13,16 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { show } from "../pages/Message";
 import { usePowerMeterValuesCallback } from "../api/channelsApi";
-
-/**
- * The Zod validation schema of form data
- */
-export const channelSchema = z.object({
-	power_meter_id: z.number(),
-	channel: z.number().min(1),
-	channel_name: z.string().nonempty(),
-	enabled: z.boolean(),
-});
 
 type ChannelFormComponentProps = {
 	toast: RefObject<Toast>;
@@ -43,6 +33,16 @@ const ChannelFormComponent = ({
 	powerMeterValues,
 	setPowerMeterValues,
 }: ChannelFormComponentProps) => {
+
+	/**
+ * The Zod validation schema of form data
+ */
+	const channelSchema = z.object({
+		power_meter_id: z.number(),
+		channel: z.number().min(1),
+		channel_name: z.string().nonempty(),
+		enabled: z.boolean(),
+	});
 
 	const {
 		control,
@@ -83,7 +83,7 @@ const ChannelFormComponent = ({
 	   *
 	   * @param data submited data values
 	   */
-	const onSubmit = submitCallback(toast, setVisible, updatePage, editedRow);
+	const onSubmit = channelSubmitCallback(toast, setVisible, updatePage, editedRow);
 
 	/**
 	 * React hook form submition error handler

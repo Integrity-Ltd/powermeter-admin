@@ -66,7 +66,7 @@ export const useGetChannelsCount = (toast: RefObject<Toast>, lazyState: DataTabl
 	},
 });
 
-export const submitCallback = (toast: RefObject<Toast>, setVisible: Dispatch<SetStateAction<boolean>>, updatePage: () => Promise<void>, editedRow: ChannelValue | undefined) => useCallback((data: FormValues) => {
+export const channelSubmitCallback = (toast: RefObject<Toast>, setVisible: Dispatch<SetStateAction<boolean>>, updatePage: () => Promise<void>, editedRow: ChannelValue | undefined) => useCallback((data: FormValues) => {
 	const params = {
 		power_meter_id: data.power_meter_id,
 		channel: data.channel,
@@ -131,7 +131,7 @@ export const submitCallback = (toast: RefObject<Toast>, setVisible: Dispatch<Set
 	}
 }, [editedRow, updatePage]);
 
-export const deleteCallback = (toast: RefObject<Toast>, updatePage: () => Promise<void>, selectedRow: ChannelValue | undefined) => useCallback(() => {
+export const deleteChannelRowCallback = (toast: RefObject<Toast>, updatePage: () => Promise<void>, selectedRow: ChannelValue | undefined) => useCallback(() => {
 	if (selectedRow) {
 		try {
 			fetch("/api/admin/crud/channels/" + String(selectedRow.id), {
@@ -167,3 +167,4 @@ export const usePowerMeterValuesCallback = (toast: RefObject<Toast>, setPowerMet
 		show(toast, "error", "Please check is the powermeter-api runing.");
 	}
 }, []);
+
