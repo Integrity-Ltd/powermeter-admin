@@ -101,13 +101,13 @@ export default function Powermeter() {
 	/**
 	 * The edited row of power meter
 	 */
-	const [editedRow, setEditedRow] = useState<PowerMeterValue | null>(
+	const [editedRow, setEditedRow] = useState<PowerMeterValue | undefined>(
 		getDefaultPowerMeterValues(),
 	);
 	/**
 	 * The selected row of power meter
 	 */
-	const [selectedRow, setSelectedRow] = useState<PowerMeterValue | null>(null);
+	const [selectedRow, setSelectedRow] = useState<PowerMeterValue | undefined>(undefined);
 	/**
 	 * Visibility of form editor dialog
 	 */
@@ -149,7 +149,7 @@ export default function Powermeter() {
 	const updatePage = useCallback(async () => {
 		await queryClient.invalidateQueries({ queryKey: ["power_meter"] });
 		await queryClient.invalidateQueries({ queryKey: ["power_metercount"] });
-		setSelectedRow(null);
+		setSelectedRow(undefined);
 		setEditedRow(getDefaultPowerMeterValues());
 	}, [queryClient]);
 
@@ -615,7 +615,7 @@ export default function Powermeter() {
 					label="New"
 					icon="pi pi-check"
 					onClick={() => {
-						setSelectedRow(null);
+						setSelectedRow(undefined);
 						setEditedRow(getDefaultPowerMeterValues());
 						setVisible(true);
 					}}

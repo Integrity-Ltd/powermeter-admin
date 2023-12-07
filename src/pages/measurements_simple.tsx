@@ -13,6 +13,7 @@ import { Dropdown } from "primereact/dropdown";
 import dayjs from "dayjs";
 import { InputNumber } from "primereact/inputnumber";
 import { ProgressSpinner } from "primereact/progressspinner";
+import { show } from "./Message";
 
 /**
  * The report details
@@ -67,24 +68,6 @@ const Simple = () => {
 	} = useForm<FormValue>({ resolver: zodResolver(schema) });
 
 	/**
-	 * Show message
-	 * @param severity severity of message
-	 * @param message message to display
-	 */
-	const show = (
-		severity: "success" | "info" | "warn" | "error" | undefined,
-		message: string,
-	) => {
-		if (toast.current !== null) {
-			toast.current.show({
-				severity,
-				summary: "Form submit",
-				detail: message,
-			});
-		}
-	};
-
-	/**
 	 * Set default values
 	 */
 	useEffect(() => {
@@ -97,7 +80,7 @@ const Simple = () => {
 	 */
 	const onSubmitError = useCallback((_fieldErrors: FieldErrors<FormValue>) => {
 		//console.log(_fieldErrors);
-		show(
+		show(toast,
 			"error",
 			"Please fill form as needed. Read tooltips on red marked fields.",
 		);
@@ -141,7 +124,7 @@ const Simple = () => {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		if (values.err) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			show("error", String(values.err));
+			show(toast, "error", String(values.err));
 			values = [];
 		}
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -158,17 +141,17 @@ const Simple = () => {
 			dayjs(data.fromDate).get("year") < dayjs().get("year") &&
 			data.details !== "monthly"
 		) {
-			show(
+			show(toast,
 				"error",
 				"Details must be monthly when required year less then current year.",
 			);
 		} else if (yearDiff) {
-			show(
+			show(toast,
 				"error",
 				"'From date' and 'To date' must be in same year.",
 			);
 		} else if (dayjs(data.toDate).isBefore(data.fromDate)) {
-			show(
+			show(toast,
 				"error",
 				"To date must be greater then from date.",
 			);
